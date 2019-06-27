@@ -1,0 +1,6 @@
+---
+unicornVersion: "0.0.2"
+type: "OTHER"
+name: "hpi-cloud"
+description: "Microservices providing a backend for the HPI-App"
+version: "0.0.1"
