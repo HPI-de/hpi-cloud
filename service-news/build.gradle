@@ -3,20 +3,18 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.9")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.40")
     }
 }
 
 plugins {
-    id "idea"
     id "kotlin"
     id "application"
-    id "com.google.protobuf"
 }
 
 repositories {
     jcenter()
+    maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
 }
 
 dependencies {
@@ -24,41 +22,22 @@ dependencies {
 
     implementation("com.google.protobuf:protobuf-java:3.6.1")
     implementation("io.grpc:grpc-stub:1.18.0")
-    implementation("io.grpc:grpc-protobuf:1.18.0")
-    implementation("io.grpc:grpc-netty-shaded:1.18.0")
+    implementation("de.hpi.cloud:hpi-cloud:0.0.1")
 }
 
-sourceSets {
+/*sourceSets {
     main {
-        proto {
-            srcDir 'src/main/proto'
-        }
         java {
             // include self written and generated code
-            srcDirs "src/main/java", "generated-sources/main/java", "generated-sources/main/grpc"
+            srcDirs "src/main/java", "generated-sources/main/java"
         }
     }
-}
+}*/
 
-
-protobuf {
-    // Configure the protoc executable
-    protoc {
-        // Download from repositories
-        artifact = "com.google.protobuf:protoc:3.0.2"
-    }
-
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.15.1"
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
-}
 
 application {
     mainClassName = "de.hpi.cloud.news.NewsService"
 }
 
+//startScripts.enabled = false
+//task server(type: CreateStartScripts) {
