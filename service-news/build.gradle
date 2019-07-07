@@ -4,12 +4,14 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.40")
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.1.0")
     }
 }
 
 plugins {
     id "kotlin"
     id "application"
+    id "com.github.johnrengelman.shadow" version "5.1.0"
 }
 
 repositories {
@@ -33,6 +35,11 @@ dependencies {
         }
     }
 }*/
+//jar {
+//    manifest {
+//        attributes 'Main-Class': 'de.hpi.cloud.news.NewsService'
+//    }
+//}
 
 
 application {
@@ -41,3 +48,7 @@ application {
 
 //startScripts.enabled = false
 //task server(type: CreateStartScripts) {
+//    applicationName = "hpi-cloud-news-server"
+//    outputDir = new File(project.buildDir, 'tmp')
+//    classpath = startScripts.classpath
+//}
