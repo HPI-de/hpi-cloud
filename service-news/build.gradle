@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.40")
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.1.0")
+    }
+}
+
+plugins {
+    id "kotlin"
+    id "application"
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+}
+
+repositories {
+    jcenter()
+    maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.40")
+
+    implementation("com.google.protobuf:protobuf-java:3.6.1")
+    implementation("io.grpc:grpc-stub:1.18.0")
+    implementation("de.hpi.cloud:hpi-cloud:0.0.1")
+}
+
+/*sourceSets {
+    main {
+        java {
+            // include self written and generated code
+            srcDirs "src/main/java", "generated-sources/main/java"
+        }
+    }
+}*/
+//jar {
+//    manifest {
+//        attributes 'Main-Class': 'de.hpi.cloud.news.NewsService'
+//    }
+//}
+
+
+application {
+    mainClassName = "de.hpi.cloud.news.NewsService"
+}
+
+//startScripts.enabled = false
+//task server(type: CreateStartScripts) {
+//    applicationName = "hpi-cloud-news-server"
+//    outputDir = new File(project.buildDir, 'tmp')
+//    classpath = startScripts.classpath
+//}

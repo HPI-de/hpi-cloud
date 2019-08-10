@@ -1,0 +1,3 @@
+rootProject.name = 'hpi-cloud'
+include 'service-news'
+
