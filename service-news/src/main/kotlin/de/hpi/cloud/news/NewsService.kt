@@ -11,12 +11,10 @@ import io.grpc.stub.StreamObserver
 
 class NewsService {
     companion object {
-        const val PORT = 50051
-
         @JvmStatic
         fun main(args: Array<String>) {
             val service = NewsService()
-            service.start()
+            service.start(args[0].toInt())
             service.blockUntilShutdown()
         }
 
@@ -143,11 +141,11 @@ class NewsService {
     val isRunning
         get() = server != null
 
-    fun start() {
+    fun start(port: Int) {
         if (server != null) throw IllegalStateException("Server is already running")
 
-        println("Starting ${NewsService::class.java.simpleName}")
-        server = ServerBuilder.forPort(PORT)
+        println("Starting ${NewsService::class.java.simpleName} on port $port")
+        server = ServerBuilder.forPort(port)
             .addService(NewsServiceImpl())
             .build()
         server?.start()
