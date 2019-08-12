@@ -20,10 +20,8 @@ fun <Req : Any, Res : Any> BindableService.catchErrors(
             if (e is StatusRuntimeException) e.status
             else when (e) {
                 is NotImplementedError -> Status.UNIMPLEMENTED
-                is IllegalArgumentException -> Status.INVALID_ARGUMENT
-                is NoSuchElementException -> Status.NOT_FOUND
                 else -> Status.UNKNOWN
-            }.withCause(e).withDescription(e.message)
+            }.withCause(e)
         val exception = status.asRuntimeException()
         exception.printStackTrace()
         responseObserver?.onError(exception)
