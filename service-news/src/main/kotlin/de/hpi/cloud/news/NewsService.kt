@@ -10,8 +10,10 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.news.v1test.*
+import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
 const val PORT_DEFAULT = 50050
@@ -47,7 +49,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
 
         val articles =
             if (siteId.isNullOrEmpty())
-                bucket.query(ViewQuery.from(DESIGN_ARTICLE_DEV, VIEW_BY_ID)).allRows()
+                bucket.query(ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)).allRows()
                     .map { it.document().content() }
             else {
                 val statement = select("*")
@@ -68,11 +70,11 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
 
     override fun getArticle(request: GetArticleRequest?, responseObserver: StreamObserver<Article>?) =
         unary(request, responseObserver, "getArticle") { req ->
-            if (req.id.isNullOrEmpty()) throw IllegalArgumentException("Argument ID is required")
+            if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
             bucket.get(DESIGN_ARTICLE_DEV, VIEW_BY_ID, req.id)
                 ?.document()?.content()?.parseArticle()
-                ?: throw NoSuchElementException("Article with ID ${req.id} not found")
+                ?: Status.NOT_FOUND.throwException("Article with ID ${req.id} not found")
         }
 
     private fun JsonObject.parseArticle(): Article {
@@ -106,11 +108,11 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
 
     override fun getSource(request: GetSourceRequest?, responseObserver: StreamObserver<Source>?) =
         unary(request, responseObserver, "getSource") { req ->
-            if (req.id.isNullOrEmpty()) throw IllegalArgumentException("Argument ID is required")
+            if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
             bucket.get(DESIGN_SOURCE_DEV, VIEW_BY_ID, req.id)
                 ?.document()?.content()?.parseSource()
-                ?: throw NoSuchElementException("Source with ID ${req.id} not found")
+                ?: Status.NOT_FOUND.throwException("Source with ID ${req.id} not found")
         }
 
     private fun JsonObject.parseSource(): Source? {
@@ -137,10 +139,10 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
 
     override fun getCategory(request: GetCategoryRequest?, responseObserver: StreamObserver<Category>?) =
         unary(request, responseObserver, "getCategory") { req ->
-            if (req.id.isNullOrEmpty()) throw IllegalArgumentException("Category ID is required")
+            if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Category ID is required")
 
             getCategory(req.id)
-                ?: throw NoSuchElementException("Category with ID ${req.id} not found")
+                ?: Status.NOT_FOUND.throwException("Category with ID ${req.id} not found")
         }
 
     private fun getCategory(id: String): Category? {
@@ -169,10 +171,10 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
 
     override fun getTag(request: GetTagRequest?, responseObserver: StreamObserver<Tag>?) =
         unary(request, responseObserver, "getTag") { req ->
-            if (req.id.isNullOrEmpty()) throw IllegalArgumentException("Argument ID is required")
+            if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
             getTag(req.id)
-                ?: throw NoSuchElementException("Tag with ID ${req.id} not found")
+                ?: Status.NOT_FOUND.throwException("Tag with ID ${req.id} not found")
         }
 
     private fun getTag(id: String): Tag? {
