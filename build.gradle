@@ -3,9 +3,6 @@ buildscript {
         mavenCentral()
         google()
     }
-    dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.9")
-    }
 }
 
 plugins {
