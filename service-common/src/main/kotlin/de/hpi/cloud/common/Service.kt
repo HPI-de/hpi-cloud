@@ -14,6 +14,8 @@ class Service<S : io.grpc.BindableService>(
 ) {
     companion object {
         const val COUCHBASE_CONNECT_TIMEOUT = 10000L
+        const val COUCHBASE_USERNAME_VARIABLE = "HPI_CLOUD_COUCHBASE_USERNAME"
+        const val COUCHBASE_PASSWORD_VARIABLE = "HPI_CLOUD_COUCHBASE_PASSWORD"
     }
 
     protected val server: Server
@@ -30,7 +32,11 @@ class Service<S : io.grpc.BindableService>(
         cluster = CouchbaseCluster.create(
             DefaultCouchbaseEnvironment.Builder().connectTimeout(COUCHBASE_CONNECT_TIMEOUT).build()
         ).apply {
-            authenticate("Test", "asdfgh")
+            val username = System.getenv(COUCHBASE_USERNAME_VARIABLE)
+                ?: throw IllegalStateException("Couchbase username must be provided via the environment variable $COUCHBASE_USERNAME_VARIABLE")
+            val password = System.getenv(COUCHBASE_PASSWORD_VARIABLE)
+                ?: throw IllegalStateException("Couchbase password must be provided via the environment variable $COUCHBASE_PASSWORD_VARIABLE")
+            authenticate(username, password)
         }
         bucket = cluster.openBucket(couchbaseBucket)
 
