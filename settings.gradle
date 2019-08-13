@@ -1,4 +1,5 @@
 rootProject.name = 'hpi-cloud'
 include 'service-common'
 include 'service-course'
+include 'service-myhpi'
 include 'service-news'
