@@ -8,7 +8,7 @@ import io.grpc.ServerBuilder
 
 
 class Service<S : io.grpc.BindableService>(
-    couchbaseBucket: String,
+    val name: String,
     port: Int,
     createServiceImpl: (Bucket) -> S
 ) {
@@ -26,7 +26,7 @@ class Service<S : io.grpc.BindableService>(
         private set
 
     init {
-        println("Starting ${this::class.java.simpleName} on port $port")
+        println("Starting $name on port $port")
 
         // Database
         cluster = CouchbaseCluster.create(
@@ -38,7 +38,7 @@ class Service<S : io.grpc.BindableService>(
                 ?: throw IllegalStateException("Couchbase password must be provided via the environment variable $COUCHBASE_PASSWORD_VARIABLE")
             authenticate(username, password)
         }
-        bucket = cluster.openBucket(couchbaseBucket)
+        bucket = cluster.openBucket(name)
 
         // Server
         @Suppress("LeakingThis")
@@ -47,21 +47,21 @@ class Service<S : io.grpc.BindableService>(
             .build()
         server.start()
 
-        println("${this::class.java.simpleName} started")
+        println("$name started")
 
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             override fun run() {
-                System.err.println("Stopping ${this::class.java.simpleName} due to runtime shutdown")
+                System.err.println("Stopping ${this@Service.name} due to runtime shutdown")
                 this@Service.stop()
             }
         })
     }
 
     fun stop() {
-        if (isStopped) throw IllegalStateException("${this::class.java.simpleName} is already stopped")
+        if (isStopped) throw IllegalStateException("$name is already stopped")
         isStopped = true
 
-        println("Stopping ${this::class.java.simpleName}")
+        println("Stopping $name")
 
         // Server
         server.shutdown()
@@ -70,7 +70,7 @@ class Service<S : io.grpc.BindableService>(
         bucket.close()
         cluster.disconnect()
 
-        println("${this::class.java.simpleName} stopped")
+        println("$name stopped")
     }
 
     fun blockUntilShutdown() {
