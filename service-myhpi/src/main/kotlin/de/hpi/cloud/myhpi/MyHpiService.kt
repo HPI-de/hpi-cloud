@@ -82,13 +82,13 @@ class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplB
             .setTitle(value.getI18nString("title"))
             .also {
                 if (value.containsKey("link")) {
-                    val link = getObject("link")
+                    val link = value.getObject("link")
                     it.setLink(
                         Action.Link.newBuilder()
                             .setUrl(link.getI18nString("url"))
                     )
                 } else if (value.containsKey("text")) {
-                    val text = getObject("text")
+                    val text = value.getObject("text")
                     it.setText(
                         Action.Text.newBuilder()
                             .setContent(text.getI18nString("content"))
