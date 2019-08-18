@@ -3,7 +3,10 @@ package de.hpi.cloud.common.utils.couchbase
 import com.couchbase.client.java.document.json.JsonArray
 import com.couchbase.client.java.document.json.JsonObject
 import com.google.protobuf.Timestamp
+import com.google.type.Date
+import com.google.type.Money
 import de.hpi.cloud.common.v1test.Image
+import java.util.*
 
 const val NESTED_SEPARATOR = '.'
 
@@ -55,6 +58,35 @@ fun JsonObject.getTimestamp(name: String): Timestamp? {
         .setNanos((millis % 1000).toInt() * 1000000 + nanos)
         .build()
 }
+
+fun JsonObject.getDate(name: String): Date? {
+    val millis = getNestedObject(name)?.getLong(TIMESTAMP_MILLIS) ?: return null
+    val cal = Calendar.getInstance().apply { timeInMillis = millis }
+    return Date.newBuilder()
+        .setYear(cal.get(Calendar.YEAR))
+        .setMonth(cal.get(Calendar.MONTH) + 1)
+        .setDay(cal.get(Calendar.DATE))
+        .build()
+}
+
+fun Date.toQueryString() = String.format("%04d-%02d-%02d", year, month, day)
+
+
+private const val MONEY_CURRENCY_CODE = "currencyCode"
+private const val MONEY_UNITS = "units"
+private const val MONEY_NANOS = "nanos"
+fun JsonObject.getMoney(name: String): Money? {
+    val obj = getNestedObject(name) ?: return null
+    val currencyCode = obj.getString(MONEY_CURRENCY_CODE) ?: return null
+    val units = obj.getLong(MONEY_UNITS) ?: return null
+    val nanos = obj.getInt(MONEY_NANOS) ?: return null
+    return Money.newBuilder()
+        .setCurrencyCode(currencyCode)
+        .setUnits(units)
+        .setNanos(nanos)
+        .build()
+}
+
 
 enum class ImageSize {
     ORIGINAL

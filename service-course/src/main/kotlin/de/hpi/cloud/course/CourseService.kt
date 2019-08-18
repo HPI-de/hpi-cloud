@@ -10,6 +10,7 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.course.v1test.*
@@ -23,7 +24,7 @@ fun main(args: Array<String>) {
     service.blockUntilShutdown()
 }
 
-class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImplBase() {
+class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseServiceImplBase() {
     companion object {
         const val DESIGN_COURSE_SERIES = "courseSeries"
         const val DESIGN_SEMESTER = "semester"
@@ -35,7 +36,7 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
     override fun listCourseSeries(
         request: ListCourseSeriesRequest?,
         responseObserver: StreamObserver<ListCourseSeriesResponse>?
-    ) = unary(request, responseObserver, "listCourseSeries") { req ->
+    ) = unary(request, responseObserver, "listCourseSeries") { _ ->
         val courseSeries = bucket.query(ViewQuery.from(DESIGN_COURSE_SERIES, VIEW_BY_ID)).allRows()
             .map { it.document().content().parseCourseSeries() }
         ListCourseSeriesResponse.newBuilder()
@@ -52,19 +53,18 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
                 ?: Status.NOT_FOUND.throwException("CourseSeries with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseCourseSeries(): CourseSeries {
-        val value = getObject(KEY_VALUE)
-        return CourseSeries.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .setShortTitle(value.getI18nString("shortTitle"))
-            .setAbbreviation(value.getI18nString("abbreviation"))
-            .setEcts(value.getInt("ects"))
-            .setHoursPerWeek(value.getInt("hoursPerWeek"))
-            .setMandatory(value.getBoolean("mandatory"))
-            .setLanguage(value.getString("language"))
-            .addAllTypes(value.getStringArray("types").mapNotNull { it?.parseCourseSeriesType() })
-            .build()
+    private fun JsonObject.parseCourseSeries(): CourseSeries? {
+        return CourseSeries.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+            shortTitle = it.getI18nString("shortTitle")
+            abbreviation = it.getI18nString("abbreviation")
+            ects = it.getInt("ects")
+            hoursPerWeek = it.getInt("hoursPerWeek")
+            mandatory = it.getBoolean("mandatory")
+            language = it.getString("language")
+            addAllTypes(it.getStringArray("types").mapNotNull { t -> t?.parseCourseSeriesType() })
+        }
     }
 
     private fun String.parseCourseSeriesType(): CourseSeries.Type {
@@ -76,19 +76,15 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
     override fun listSemesters(
         request: ListSemestersRequest?,
         responseObserver: StreamObserver<ListSemestersResponse>?
-    ) =
-        unary(request, responseObserver, "listSemesters") { req ->
-            val semesters = bucket.query(ViewQuery.from(DESIGN_SEMESTER, VIEW_BY_ID)).allRows()
-                .map { it.document().content().parseSemester() }
-            ListSemestersResponse.newBuilder()
-                .addAllSemesters(semesters)
-                .build()
-        }
+    ) = unary(request, responseObserver, "listSemesters") { _ ->
+        val semesters = bucket.query(ViewQuery.from(DESIGN_SEMESTER, VIEW_BY_ID)).allRows()
+            .map { it.document().content().parseSemester() }
+        ListSemestersResponse.newBuilder()
+            .addAllSemesters(semesters)
+            .build()
+    }
 
-    override fun getSemester(
-        request: GetSemesterRequest?,
-        responseObserver: StreamObserver<Semester>?
-    ) =
+    override fun getSemester(request: GetSemesterRequest?, responseObserver: StreamObserver<Semester>?) =
         unary(request, responseObserver, "getSemester") { req ->
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
@@ -98,12 +94,11 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
         }
 
     private fun JsonObject.parseSemester(): Semester? {
-        val value = getObject(KEY_VALUE)
-        return Semester.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTerm(value.getString("term").parseSemesterTerm())
-            .setYear(value.getInt("year"))
-            .build()
+        return Semester.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            term = it.getString("term").parseSemesterTerm()
+            year = it.getInt("year")
+        }
     }
 
     private fun String.parseSemesterTerm(): Semester.Term {
@@ -122,14 +117,14 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
                     bucket.query(ViewQuery.from(DESIGN_COURSE, VIEW_BY_ID)).allRows()
                         .map { it.document().content() }
                 else {
-                    val filters = listOfNotNull(
-                        x(KEY_TYPE).eq(s("course")),
-                        n(KEY_VALUE, "courseSeriesId").eq(s(courseSeriesId)).takeIf { courseSeriesId != null },
-                        n(KEY_VALUE, "semesterId").eq(s(semesterId)).takeIf { semesterId != null }
-                    )
                     val statement = Select.select("*")
                         .from(bucket.name())
-                        .where(and(filters))
+                        .where(
+                            and(
+                                x(KEY_TYPE).eq(s("course")),
+                                n(KEY_VALUE, "courseSeriesId").eq(s(courseSeriesId)).takeIf { courseSeriesId != null },
+                                n(KEY_VALUE, "semesterId").eq(s(semesterId)).takeIf { semesterId != null })
+                        )
                     bucket.query(N1qlQuery.simple(statement, N1qlParams.build().adhoc(false))).allRows()
                         .map { it.value().getObject(bucket.name()) }
                 }
@@ -148,16 +143,15 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
                 ?: Status.NOT_FOUND.throwException("Course with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseCourse(): Course {
-        val value = getObject(KEY_VALUE)
-        return Course.newBuilder()
-            .setId(getString(KEY_ID))
-            .setCourseSeriesId(value.getString("courseSeriesId"))
-            .setSemesterId(value.getString("semesterId"))
-            .setLecturer(value.getString("lecturer"))
-            .addAllAssistants(value.getStringArray("assistants"))
-            .setWebsite(value.getString("website"))
-            .build()
+    private fun JsonObject.parseCourse(): Course? {
+        return Course.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            courseSeriesId = it.getString("courseSeriesId")
+            semesterId = it.getString("semesterId")
+            lecturer = it.getString("lecturer")
+            addAllAssistants(it.getStringArray("assistants").filterNotNull())
+            it.getString("website")?.let { w -> website = w }
+        }
     }
     // endregion
 
@@ -165,14 +159,13 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
     override fun listCourseDetails(
         request: ListCourseDetailsRequest?,
         responseObserver: StreamObserver<ListCourseDetailsResponse>?
-    ) =
-        unary(request, responseObserver, "listCourseDetails") { req ->
-            val courseDetails = bucket.query(ViewQuery.from(DESIGN_COURSE_DETAIL, VIEW_BY_ID)).allRows()
-                .map { it.document().content().parseCourseDetail() }
-            ListCourseDetailsResponse.newBuilder()
-                .addAllDetails(courseDetails)
-                .build()
-        }
+    ) = unary(request, responseObserver, "listCourseDetails") { _ ->
+        val courseDetails = bucket.query(ViewQuery.from(DESIGN_COURSE_DETAIL, VIEW_BY_ID)).allRows()
+            .map { it.document().content().parseCourseDetail() }
+        ListCourseDetailsResponse.newBuilder()
+            .addAllDetails(courseDetails)
+            .build()
+    }
 
     override fun getCourseDetail(request: GetCourseDetailRequest?, responseObserver: StreamObserver<CourseDetail>?) =
         unary(request, responseObserver, "getCourseDetail") { req ->
@@ -184,22 +177,21 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
         }
 
     private fun JsonObject.parseCourseDetail(): CourseDetail? {
-        val value = getObject(KEY_VALUE)
-        return CourseDetail.newBuilder()
-            .setCourseId(getString(KEY_ID))
-            .setTeletask(value.getString("teletask"))
-            .putAllPrograms(value.getObject("programs").toMap()
-                .mapValues {
+        return CourseDetail.newBuilder().buildWith(this) {
+            courseId = getString(KEY_ID)
+            it.getString("teletask")?.let { t -> teletask = t }
+            putAllPrograms(it.getObject("programs").toMap()
+                .mapValues { p ->
                     @Suppress("UNCHECKED_CAST")
-                    CourseDetail.ProgramList.newBuilder().addAllPrograms(it.value as List<String>).build()
+                    CourseDetail.ProgramList.newBuilder().addAllPrograms(p.value as List<String>).build()
                 })
-            .setDescription(value.getI18nString("description"))
-            .setRequirements(value.getI18nString("requirements"))
-            .setLearning(value.getI18nString("learning"))
-            .setExamination(value.getI18nString("examination"))
-            .setDates(value.getI18nString("dates"))
-            .setLiterature(value.getI18nString("literature"))
-            .build()
+            it.getI18nString("description").let { d -> description = d }
+            it.getI18nString("requirements").let { r -> requirements = r }
+            it.getI18nString("learning").let { l -> learning = l }
+            it.getI18nString("examination").let { e -> examination = e }
+            it.getI18nString("dates").let { d -> dates = d }
+            it.getI18nString("literature").let { l -> literature = l }
+        }
     }
     // endregion
 }

@@ -5,6 +5,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.myhpi.v1test.*
@@ -14,11 +15,11 @@ import io.grpc.stub.StreamObserver
 const val PORT_DEFAULT = 50050
 
 fun main(args: Array<String>) {
-    val service = Service("myhpi", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { CourseServiceImpl(it) }
+    val service = Service("myhpi", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { MyHpiServiceImpl(it) }
     service.blockUntilShutdown()
 }
 
-class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplBase() {
+class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplBase() {
     companion object {
         const val DESIGN_INFO_BIT = "infoBit"
         const val DESIGN_ACTION = "action"
@@ -28,7 +29,7 @@ class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplB
     override fun listInfoBits(
         request: ListInfoBitsRequest?,
         responseObserver: StreamObserver<ListInfoBitsResponse>?
-    ) = unary(request, responseObserver, "listInfoBits") { req ->
+    ) = unary(request, responseObserver, "listInfoBits") { _ ->
         val infoBits = bucket.query(ViewQuery.from(DESIGN_INFO_BIT, VIEW_BY_ID)).allRows()
             .map { it.document().content().parseInfoBit() }
         ListInfoBitsResponse.newBuilder()
@@ -46,19 +47,18 @@ class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplB
         }
 
     private fun JsonObject.parseInfoBit(): InfoBit {
-        val value = getObject(KEY_VALUE)
-        return InfoBit.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .setDescription(value.getI18nString("description"))
-            .addAllActionIds(value.getStringArray("actionIds"))
-            .build()
+        return InfoBit.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+            description = it.getI18nString("description")
+            addAllActionIds(it.getStringArray("actionIds"))
+        }
     }
     // endregion
 
     // region Action
     override fun listActions(request: ListActionsRequest?, responseObserver: StreamObserver<ListActionsResponse>?) =
-        unary(request, responseObserver, "listActions") { req ->
+        unary(request, responseObserver, "listActions") { _ ->
             val actions = bucket.query(ViewQuery.from(DESIGN_ACTION, VIEW_BY_ID)).allRows()
                 .map { it.document().content().parseAction() }
             ListActionsResponse.newBuilder()
@@ -76,30 +76,28 @@ class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplB
         }
 
     private fun JsonObject.parseAction(): Action? {
-        val value = getObject(KEY_VALUE)
-        return Action.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .setIcon(value.getString("icon"))
-            .also {
-                if (value.containsKey("link")) {
-                    val link = value.getObject("link")
-                    it.setLink(
+        return Action.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+            it.getString("icon")?.let { i -> icon = i }
+            when {
+                it.containsKey("link") ->
+                    link = it.getObject("link").let { link ->
                         Action.Link.newBuilder()
                             .setUrl(link.getI18nString("url"))
-                    )
-                } else if (value.containsKey("text")) {
-                    val text = value.getObject("text")
-                    it.setText(
+                            .build()
+                    }
+                it.containsKey("text") ->
+                    text = it.getObject("text").let { text ->
                         Action.Text.newBuilder()
                             .setContent(text.getI18nString("content"))
-                    )
-                } else {
+                            .build()
+                    }
+                else -> {
                     println("Action with ID ${getString(KEY_ID)} does not have a valid type")
-                    return null
                 }
             }
-            .build()
+        }
     }
     // endregion
 }
