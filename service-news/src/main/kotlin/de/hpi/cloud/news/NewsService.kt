@@ -8,6 +8,7 @@ import com.couchbase.client.java.query.Select.select
 import com.couchbase.client.java.query.dsl.Expression.s
 import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.view.ViewQuery
+import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
 import de.hpi.cloud.common.utils.grpc.throwException
@@ -36,12 +37,12 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
         request: ListArticlesRequest?,
         responseObserver: StreamObserver<ListArticlesResponse>?
     ) = unary(request, responseObserver, "listArticles") { req ->
-        val siteId = req.siteId?.trim()?.takeIf { it.isNotEmpty() }
+        val sourceId = req.sourceId?.trim()?.takeIf { it.isNotEmpty() }
         if (!req.categoryId.isNullOrBlank()) TODO("Filtering by category_id is not yet supported")
         if (!req.tagId.isNullOrBlank()) TODO("Filtering by tag_id is not yet supported")
 
         val articles =
-            if (siteId.isNullOrEmpty())
+            if (sourceId.isNullOrEmpty())
                 bucket.query(ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)).allRows()
                     .map { it.document().content() }
             else {
@@ -49,7 +50,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
                     .from(bucket.name())
                     .where(
                         x(KEY_TYPE).eq(s("article"))
-                            .and(n(KEY_VALUE, "sourceId").eq(s(siteId)))
+                            .and(n(KEY_VALUE, "sourceId").eq(s(sourceId)))
                     )
                     .orderBy(*descTimestamp(n(KEY_VALUE, "publishedAt")))
                 bucket.query(N1qlQuery.simple(statement, N1qlParams.build().adhoc(false))).allRows()
@@ -84,7 +85,11 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
             .setContent(value.getI18nString("content"))
             .addAllCategories(value.getStringArray("categories").filterNotNull().mapNotNull { getCategory(it) })
             .addAllTags(value.getStringArray("tags").filterNotNull().mapNotNull { getTag(it) })
-            .setViewCount(value.getInt("viewCount") ?: 0)
+            .apply {
+                value.getInt("viewCount")?.let {
+                    viewCount = UInt32Value.of(it)
+                }
+            }
             .build()
     }
     // endregion
@@ -112,7 +117,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
         val value = getObject(KEY_VALUE)
         return Source.newBuilder()
             .setId(getString(KEY_ID))
-            .setName(value.getI18nString("title"))
+            .setTitle(value.getI18nString("title"))
             .setLink(value.getI18nString("link"))
             .build()
     }
@@ -147,7 +152,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
         val value = getObject(KEY_VALUE)
         return Category.newBuilder()
             .setId(getString(KEY_ID))
-            .setName(value.getI18nString("title"))
+            .setTitle(value.getI18nString("title"))
             .build()
     }
     // endregion
@@ -179,7 +184,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
         val value = getObject(KEY_VALUE)
         return Tag.newBuilder()
             .setId(getString(KEY_ID))
-            .setName(value.getI18nString("title"))
+            .setTitle(value.getI18nString("title"))
             .setArticleCount(value.getInt("articleCount") ?: 0)
             .build()
     }
