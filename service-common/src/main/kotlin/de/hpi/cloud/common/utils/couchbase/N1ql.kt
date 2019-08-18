@@ -1,15 +1,16 @@
 package de.hpi.cloud.common.utils.couchbase
 
 import com.couchbase.client.java.query.dsl.Expression
-import com.couchbase.client.java.query.dsl.Expression.i
-import com.couchbase.client.java.query.dsl.Expression.x
+import com.couchbase.client.java.query.dsl.Expression.*
 import com.couchbase.client.java.query.dsl.Sort
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.Sort.desc
 
-fun and(expressions: List<Expression>): Expression {
-    return if (expressions.isEmpty()) x("TRUE")
-    else expressions.reduce { e1, e2 -> e1.and(e2) }
+fun and(vararg expressions: Expression?): Expression {
+    return expressions.filterNotNull().run {
+        if (isEmpty()) TRUE()
+        else reduce { e1, e2 -> e1.and(e2) }
+    }
 }
 
 fun ascTimestamp(field: Expression): Array<Sort> {
