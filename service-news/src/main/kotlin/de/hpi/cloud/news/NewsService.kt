@@ -11,6 +11,7 @@ import com.couchbase.client.java.view.ViewQuery
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.news.v1test.*
@@ -24,7 +25,7 @@ fun main(args: Array<String>) {
     service.blockUntilShutdown()
 }
 
-class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase() {
+class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase() {
     companion object {
         const val DESIGN_ARTICLE = "article"
         const val DESIGN_SOURCE = "source"
@@ -71,32 +72,27 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
                 ?: Status.NOT_FOUND.throwException("Article with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseArticle(): Article {
-        val value = getObject(KEY_VALUE)
-        return Article.newBuilder()
-            .setId(getString(KEY_ID))
-            .setSourceId(value.getString("sourceId"))
-            .setLink(value.getI18nString("link"))
-            .setTitle(value.getI18nString("title"))
-            .setPublishDate(value.getTimestamp("publishedAt"))
-            .addAllAuthorIds(value.getStringArray("authorIds").filterNotNull())
-            .setCover(value.getImage("cover"))
-            .setTeaser(value.getI18nString("teaser"))
-            .setContent(value.getI18nString("content"))
-            .addAllCategories(value.getStringArray("categories").filterNotNull().mapNotNull { getCategory(it) })
-            .addAllTags(value.getStringArray("tags").filterNotNull().mapNotNull { getTag(it) })
-            .apply {
-                value.getInt("viewCount")?.let {
-                    viewCount = UInt32Value.of(it)
-                }
-            }
-            .build()
+    private fun JsonObject.parseArticle(): Article? {
+        return Article.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            sourceId = it.getString("sourceId")
+            link = it.getI18nString("link")
+            title = it.getI18nString("title")
+            publishDate = it.getTimestamp("publishedAt")
+            addAllAuthorIds(it.getStringArray("authorIds").filterNotNull())
+            cover = it.getImage("cover")
+            teaser = it.getI18nString("teaser")
+            content = it.getI18nString("content")
+            addAllCategories(it.getStringArray("categories").filterNotNull().mapNotNull { c -> getCategory(c) })
+            addAllTags(it.getStringArray("tags").filterNotNull().mapNotNull { t -> getTag(t) })
+            it.getInt("viewCount")?.let { c -> viewCount = UInt32Value.of(c) }
+        }
     }
     // endregion
 
     // region Source
     override fun listSources(request: ListSourcesRequest?, responseObserver: StreamObserver<ListSourcesResponse>?) =
-        unary(request, responseObserver, "listSources") { req ->
+        unary(request, responseObserver, "listSources") { _ ->
             val sources = bucket.query(ViewQuery.from(DESIGN_SOURCE, VIEW_BY_ID)).allRows()
                 .map { it.document().content().parseSource() }
             ListSourcesResponse.newBuilder()
@@ -114,12 +110,11 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
         }
 
     private fun JsonObject.parseSource(): Source? {
-        val value = getObject(KEY_VALUE)
-        return Source.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .setLink(value.getI18nString("link"))
-            .build()
+        return Source.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+            link = it.getI18nString("link")
+        }
     }
     // endregion
 
@@ -127,7 +122,7 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
     override fun listCategories(
         request: ListCategoriesRequest?,
         responseObserver: StreamObserver<ListCategoriesResponse>?
-    ) = unary(request, responseObserver, "listCategories") { req ->
+    ) = unary(request, responseObserver, "listCategories") { _ ->
         val categories = bucket.query(ViewQuery.from(DESIGN_CATEGORY, VIEW_BY_ID)).allRows()
             .map { it.document().content().parseCategory() }
         ListCategoriesResponse.newBuilder()
@@ -149,17 +144,16 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
     }
 
     private fun JsonObject.parseCategory(): Category? {
-        val value = getObject(KEY_VALUE)
-        return Category.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .build()
+        return Category.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+        }
     }
     // endregion
 
     // region Tag
     override fun listTags(request: ListTagsRequest?, responseObserver: StreamObserver<ListTagsResponse>?) =
-        unary(request, responseObserver, "listTags") { req ->
+        unary(request, responseObserver, "listTags") { _ ->
             val tags = bucket.query(ViewQuery.from(DESIGN_TAG, VIEW_BY_ID)).allRows()
                 .map { it.document().content().parseTag() }
             ListTagsResponse.newBuilder()
@@ -181,12 +175,11 @@ class NewsServiceImpl(val bucket: Bucket) : NewsServiceGrpc.NewsServiceImplBase(
     }
 
     private fun JsonObject.parseTag(): Tag? {
-        val value = getObject(KEY_VALUE)
-        return Tag.newBuilder()
-            .setId(getString(KEY_ID))
-            .setTitle(value.getI18nString("title"))
-            .setArticleCount(value.getInt("articleCount") ?: 0)
-            .build()
+        return Tag.newBuilder().buildWith(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title")
+            articleCount = it.getInt("articleCount") ?: 0
+        }
     }
     // endregion
 }

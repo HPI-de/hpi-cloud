@@ -11,6 +11,7 @@ import com.couchbase.client.java.query.dsl.functions.DateFunctions.millisToStr
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.food.v1test.*
@@ -24,7 +25,7 @@ fun main(args: Array<String>) {
     service.blockUntilShutdown()
 }
 
-class FoodServiceImpl(val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase() {
+class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase() {
     companion object {
         const val DESIGN_RESTAURANT = "restaurant"
         const val DESIGN_MENU_ITEM = "menuItem"
@@ -35,7 +36,7 @@ class FoodServiceImpl(val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase(
     override fun listRestaurants(
         request: ListRestaurantsRequest?,
         responseObserver: StreamObserver<ListRestaurantsResponse>?
-    ) = unary(request, responseObserver, "listRestaurants") { req ->
+    ) = unary(request, responseObserver, "listRestaurants") { _ ->
         val infoBits = bucket.query(ViewQuery.from(DESIGN_RESTAURANT, VIEW_BY_ID)).allRows()
             .map { it.document().content().parseRestaurant() }
         ListRestaurantsResponse.newBuilder()
@@ -53,11 +54,10 @@ class FoodServiceImpl(val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase(
         }
 
     private fun JsonObject.parseRestaurant(): Restaurant {
-        val value = getObject(KEY_VALUE)
-        return Restaurant.newBuilder().apply {
+        return Restaurant.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
-            title = value.getI18nString("title")
-        }.build()
+            title = it.getI18nString("title")
+        }
     }
     // endregion
 
@@ -109,30 +109,29 @@ class FoodServiceImpl(val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase(
         }
 
     private fun JsonObject.parseMenuItem(): MenuItem? {
-        val value = getObject(KEY_VALUE)
-        return MenuItem.newBuilder().apply {
+        return MenuItem.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
-            restaurantId = value.getString("restaurantId")
-            value.getDate("date")?.let { date = it }
-            value.getI18nString("counter")?.let { counter = it }
-            value.getObject("prices").let { prices ->
-                putAllPrices(prices.names.map { it to prices.getMoney(it) }.toMap())
+            restaurantId = it.getString("restaurantId")
+            it.getDate("date")?.let { d -> date = d }
+            it.getI18nString("counter")?.let { c -> counter = c }
+            it.getObject("prices").let { prices ->
+                putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
             }
-            title = value.getI18nString("title")
-            addAllLabelIds(value.getStringArray("labelIds").filterNotNull())
-            value.getObject("substitution")?.also { sub ->
+            title = it.getI18nString("title")
+            addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
+            it.getObject("substitution")?.also { sub ->
                 substitution = MenuItem.Substitution.newBuilder().apply {
                     title = sub.getI18nString("title")
                     addAllLabelIds(sub.getStringArray("labelIds").filterNotNull())
                 }.build()
             }
-        }.build()
+        }
     }
     // endregion
 
     // region Label
     override fun listLabels(request: ListLabelsRequest?, responseObserver: StreamObserver<ListLabelsResponse>?) =
-        unary(request, responseObserver, "listLabels") { req ->
+        unary(request, responseObserver, "listLabels") { _ ->
             val infoBits = bucket.query(ViewQuery.from(DESIGN_LABEL, VIEW_BY_ID)).allRows()
                 .map { it.document().content().parseLabel() }
             ListLabelsResponse.newBuilder()
@@ -150,12 +149,11 @@ class FoodServiceImpl(val bucket: Bucket) : FoodServiceGrpc.FoodServiceImplBase(
         }
 
     private fun JsonObject.parseLabel(): Label {
-        val value = getObject(KEY_VALUE)
-        return Label.newBuilder().apply {
+        return Label.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
-            title = value.getI18nString("title")
-            value.getString("icon")?.let { icon = it }
-        }.build()
+            title = it.getI18nString("title")
+            it.getString("icon")?.let { i -> icon = i }
+        }
     }
     // endregion
 }
