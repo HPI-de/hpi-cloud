@@ -102,7 +102,7 @@ class CourseServiceImpl(val bucket: Bucket) : CourseServiceGrpc.CourseServiceImp
         return Semester.newBuilder()
             .setId(getString(KEY_ID))
             .setTerm(value.getString("term").parseSemesterTerm())
-            .setYear(value.getLong("year"))
+            .setYear(value.getInt("year"))
             .build()
     }
 

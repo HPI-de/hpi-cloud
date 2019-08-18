@@ -63,10 +63,14 @@ enum class ImageSize {
 fun JsonObject.getImage(name: String, size: ImageSize = ImageSize.ORIGINAL, preferredLanguage: String = "en"): Image? {
     val obj = getNestedObject(name) ?: return null
     val source = obj.getObject("source").getString(size.name.toLowerCase()) ?: return null
-    val alt = obj.getI18nString("alt", preferredLanguage)
     return Image.newBuilder()
         .setSource(source)
-        .setAlt(alt)
+        .setAlt(obj.getI18nString("alt", preferredLanguage))
+        .apply {
+            obj.getDouble("aspectRatio")?.toFloat()?.let {
+                aspectRatio = it
+            }
+        }
         .build()
 }
 

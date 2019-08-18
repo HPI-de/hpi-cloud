@@ -80,6 +80,7 @@ class CourseServiceImpl(val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServiceImplB
         return Action.newBuilder()
             .setId(getString(KEY_ID))
             .setTitle(value.getI18nString("title"))
+            .setIcon(value.getString("icon"))
             .also {
                 if (value.containsKey("link")) {
                     val link = value.getObject("link")
