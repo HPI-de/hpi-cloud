@@ -10,10 +10,13 @@ import io.grpc.ServerBuilder
 
 class Service<S : io.grpc.BindableService>(
     val name: String,
-    port: Int,
+    portOverride: Int?,
     createServiceImpl: (Bucket) -> S
 ) {
     companion object {
+        const val PORT_DEFAULT = 50051
+        const val PORT_VARIABLE = "HPI_CLOUD_PORT"
+
         const val COUCHBASE_CONNECT_TIMEOUT = 15000L
         const val COUCHBASE_NODES_VARIABLE = "HPI_CLOUD_COUCHBASE_NODES"
         const val COUCHBASE_USERNAME_VARIABLE = "HPI_CLOUD_COUCHBASE_USERNAME"
@@ -28,6 +31,9 @@ class Service<S : io.grpc.BindableService>(
         private set
 
     init {
+        val port = portOverride
+            ?: System.getenv(PORT_VARIABLE)?.toInt()
+            ?: PORT_DEFAULT
         println("Starting $name on port $port")
 
         // Database
