@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="hpi-cloud.common.main" target="12" />
+      <module name="hpi-cloud.common.test" target="12" />
+      <module name="hpi-cloud.main" target="12" />
+      <module name="hpi-cloud.service-common.main" target="12" />
+      <module name="hpi-cloud.service-common.test" target="12" />
+      <module name="hpi-cloud.service-course.main" target="12" />
+      <module name="hpi-cloud.service-course.test" target="12" />
+      <module name="hpi-cloud.service-feedback.main" target="12" />
+      <module name="hpi-cloud.service-feedback.test" target="12" />
+      <module name="hpi-cloud.service-food.main" target="12" />
+      <module name="hpi-cloud.service-food.test" target="12" />
+      <module name="hpi-cloud.service-myhpi.main" target="12" />
+      <module name="hpi-cloud.service-myhpi.test" target="12" />
+      <module name="hpi-cloud.service-news-crawler.main" target="12" />
+      <module name="hpi-cloud.service-news-crawler.test" target="12" />
+      <module name="hpi-cloud.service-news.main" target="12" />
+      <module name="hpi-cloud.service-news.test" target="12" />
+      <module name="hpi-cloud.test" target="12" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
