@@ -18,10 +18,8 @@ import de.hpi.cloud.news.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-const val PORT_DEFAULT = 50050
-
 fun main(args: Array<String>) {
-    val service = Service("news", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { NewsServiceImpl(it) }
+    val service = Service("news", args.firstOrNull()?.toInt()) { NewsServiceImpl(it) }
     service.blockUntilShutdown()
 }
 

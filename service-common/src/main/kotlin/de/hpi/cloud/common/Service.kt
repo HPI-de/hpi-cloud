@@ -1,6 +1,7 @@
 package de.hpi.cloud.common
 
 import com.couchbase.client.java.Bucket
+import com.couchbase.client.java.CouchbaseAsyncCluster
 import com.couchbase.client.java.CouchbaseCluster
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
 import io.grpc.Server
@@ -13,7 +14,8 @@ class Service<S : io.grpc.BindableService>(
     createServiceImpl: (Bucket) -> S
 ) {
     companion object {
-        const val COUCHBASE_CONNECT_TIMEOUT = 10000L
+        const val COUCHBASE_CONNECT_TIMEOUT = 15000L
+        const val COUCHBASE_NODES_VARIABLE = "HPI_CLOUD_COUCHBASE_NODES"
         const val COUCHBASE_USERNAME_VARIABLE = "HPI_CLOUD_COUCHBASE_USERNAME"
         const val COUCHBASE_PASSWORD_VARIABLE = "HPI_CLOUD_COUCHBASE_PASSWORD"
     }
@@ -29,8 +31,10 @@ class Service<S : io.grpc.BindableService>(
         println("Starting $name on port $port")
 
         // Database
+        val nodes = System.getenv(COUCHBASE_NODES_VARIABLE)?.split(',')
+            ?: listOf(CouchbaseAsyncCluster.DEFAULT_HOST)
         cluster = CouchbaseCluster.create(
-            DefaultCouchbaseEnvironment.Builder().connectTimeout(COUCHBASE_CONNECT_TIMEOUT).build()
+            DefaultCouchbaseEnvironment.Builder().connectTimeout(COUCHBASE_CONNECT_TIMEOUT).build(), nodes
         ).apply {
             val username = System.getenv(COUCHBASE_USERNAME_VARIABLE)
                 ?: throw IllegalStateException("Couchbase username must be provided via the environment variable $COUCHBASE_USERNAME_VARIABLE")
@@ -41,7 +45,6 @@ class Service<S : io.grpc.BindableService>(
         bucket = cluster.openBucket(name)
 
         // Server
-        @Suppress("LeakingThis")
         server = ServerBuilder.forPort(port)
             .addService(createServiceImpl(bucket))
             .build()
