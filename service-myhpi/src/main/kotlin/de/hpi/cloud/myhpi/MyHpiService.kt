@@ -12,10 +12,8 @@ import de.hpi.cloud.myhpi.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-const val PORT_DEFAULT = 50050
-
 fun main(args: Array<String>) {
-    val service = Service("myhpi", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { MyHpiServiceImpl(it) }
+    val service = Service("myhpi", args.firstOrNull()?.toInt()) { MyHpiServiceImpl(it) }
     service.blockUntilShutdown()
 }
 
@@ -46,7 +44,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
                 ?: Status.NOT_FOUND.throwException("InfoBit with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseInfoBit(): InfoBit {
+    private fun JsonObject.parseInfoBit(): InfoBit? {
         return InfoBit.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
