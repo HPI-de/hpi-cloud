@@ -5,6 +5,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import com.google.protobuf.Timestamp
 import com.google.type.Date
 import com.google.type.Money
+import de.hpi.cloud.common.utils.protobuf.TIMESTAMP_MILLIS
 import de.hpi.cloud.common.v1test.Image
 import java.util.*
 
@@ -47,18 +48,6 @@ fun JsonObject.getNestedInt(name: String): Int? {
 // endregion
 
 
-const val TIMESTAMP_MILLIS = "millis"
-const val TIMESTAMP_NANOS = "nanos"
-fun JsonObject.getTimestamp(name: String): Timestamp? {
-    val obj = getNestedObject(name) ?: return null
-    val millis = obj.getLong(TIMESTAMP_MILLIS) ?: return null
-    val nanos = obj.getInt(TIMESTAMP_NANOS) ?: return null
-    return Timestamp.newBuilder()
-        .setSeconds(millis / 1000)
-        .setNanos((millis % 1000).toInt() * 1000000 + nanos)
-        .build()
-}
-
 fun JsonObject.getDate(name: String): Date? {
     val millis = getNestedObject(name)?.getLong(TIMESTAMP_MILLIS) ?: return null
     val cal = Calendar.getInstance().apply { timeInMillis = millis }
@@ -84,25 +73,6 @@ fun JsonObject.getMoney(name: String): Money? {
         .setCurrencyCode(currencyCode)
         .setUnits(units)
         .setNanos(nanos)
-        .build()
-}
-
-
-enum class ImageSize {
-    ORIGINAL
-}
-
-fun JsonObject.getImage(name: String, size: ImageSize = ImageSize.ORIGINAL, preferredLanguage: String = "en"): Image? {
-    val obj = getNestedObject(name) ?: return null
-    val source = obj.getObject("source").getString(size.name.toLowerCase()) ?: return null
-    return Image.newBuilder()
-        .setSource(source)
-        .setAlt(obj.getI18nString("alt", preferredLanguage))
-        .apply {
-            obj.getDouble("aspectRatio")?.toFloat()?.let {
-                aspectRatio = it
-            }
-        }
         .build()
 }
 

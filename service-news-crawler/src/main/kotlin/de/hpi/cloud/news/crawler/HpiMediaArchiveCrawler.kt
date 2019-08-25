@@ -1,12 +1,10 @@
 package de.hpi.cloud.news.crawler
 
-import de.hpi.cloud.news.ArticleCrawler
 import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
 
-class HpiMediaArchiveCrawler() : ArticleCrawler() {
-
+class HpiMediaArchiveCrawler : ArticleCrawler() {
     enum class HpiMediaSource(val id: String) {
         NEWS("hpi-news"),
         PRESS("hpi-press")
@@ -27,7 +25,6 @@ class HpiMediaArchiveCrawler() : ArticleCrawler() {
     init {
         val doc = createDocumentQuery(SITE_URL).get()
 
-//        val baseURL = doc.selectFirst("head > base").attr("href")
         baseUri = URI(doc.baseUri())
 
         val listForm = doc.selectFirst("form.tx_dscoverview_filterForm")
@@ -39,18 +36,16 @@ class HpiMediaArchiveCrawler() : ArticleCrawler() {
             .first()
 
         val params = mutableMapOf<String, String>()
-        for (input in listForm.select("input")) {
+        listForm.select("input").forEach { input ->
             params[input.attr("name")] = input.attr("value")
         }
 
         archive = HpiMediaArchive(
-            crawler = this,
+            this,
             queryUrl = baseUri.resolve(archivePath).toURL(),
             queryParams = params.toMap()
         )
-        resolver = HpiMediaArticleResolver(
-            crawler = this
-        )
+        resolver = HpiMediaArticleResolver(this)
     }
 
     override fun query(indexOffset: Int) = archive

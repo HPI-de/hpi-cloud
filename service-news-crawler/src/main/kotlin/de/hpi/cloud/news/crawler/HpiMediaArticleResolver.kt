@@ -1,15 +1,13 @@
 package de.hpi.cloud.news.crawler
 
-import de.hpi.cloud.news.Article
-import de.hpi.cloud.news.ArticleCrawler
-import de.hpi.cloud.news.ArticlePreview
+import de.hpi.cloud.common.utils.protobuf.ImageSize
+import de.hpi.cloud.common.utils.removeFirst
 import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import org.jsoup.nodes.Element
 
 class HpiMediaArticleResolver(
     val crawler: ArticleCrawler
 ) {
-
     companion object {
         private val SOURCE_MAPPING = mapOf(
             "Pressemitteilung" to HpiMediaSource.PRESS,
@@ -19,7 +17,6 @@ class HpiMediaArticleResolver(
 
     fun resolvePreview(preview: ArticlePreview): Article {
         val doc = crawler.createDocumentQuery(preview.url).get()
-//        doc.charset(Charsets.UTF_8)
         val contentElements = doc.selectFirst("div#content")
             .children()
             .drop(1)
@@ -28,7 +25,7 @@ class HpiMediaArticleResolver(
 
         val sourceString = contentElements.removeFirst { it.`is`("h3") }!!.text().trim()
         val source = SOURCE_MAPPING[sourceString] ?: error("Unknown article source")
-        if(source != preview.source) error("Mismatching sources detected")
+        if (source != preview.source) error("Mismatching sources detected")
 
         // date is known from preview
         contentElements.removeFirst { it.`is`("p.date") }
@@ -44,7 +41,7 @@ class HpiMediaArticleResolver(
                 Article.ArticleCover(
                     alt = coverAlt!!,
                     sources = mapOf(
-                        "original" to crawler.baseUri.resolve(coverSrc).toURL()
+                        ImageSize.ORIGINAL to crawler.baseUri.resolve(coverSrc).toURL()
                     )
                 )
             }
@@ -52,20 +49,16 @@ class HpiMediaArticleResolver(
 
         val articleContent = contentElements.joinToString(separator = "\n") { it.toString().trim() }
 
-        return Article(
-            preview = preview,
-            content = articleContent,
-            cover = cover
-        )
+        return Article(preview, articleContent, cover)
     }
 
     private fun unboxContent(element: Element): List<Element> {
-        return if (element.`is`("div")) {
-            if (element.classNames().contains("alertbox") || element.classNames().contains("alert-info"))
+        return when {
+            !element.`is`("div") -> listOf(element)
+            element.classNames().contains("alertbox") || element.classNames().contains("alert-info") ->
                 listOf(createInfoBox(element))
-            else
-                element.children().flatMap { unboxContent(it) }
-        } else listOf(element)
+            else -> element.children().flatMap { unboxContent(it) }
+        }
     }
 
     private fun createInfoBox(boxContainer: Element): Element {
@@ -75,17 +68,6 @@ class HpiMediaArticleResolver(
         content.appendChildren(boxContainer.children())
         alertBox.appendChildren(unboxContent(content))
         return alertBox
-    }
-
-    private fun <E : Any> MutableList<out E>.removeFirst(filter: (E) -> Boolean): E? {
-        val index = this.indexOfFirst(filter)
-        return if (index != -1) {
-            val elem = this[index]
-            this.removeAt(index)
-            elem
-        } else {
-            null
-        }
     }
 
     private fun Element.appendChildren(elements: List<Element>) {

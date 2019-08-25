@@ -1,30 +1,26 @@
-package de.hpi.cloud.news
+package de.hpi.cloud.news.crawler
 
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.net.URI
 import java.net.URL
-import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ArticleCrawler {
-
     abstract val baseUri: URI
     abstract val serviceName: String
     abstract val crawlerVersion: String
-    val serviceString get() = "[$serviceName]/$crawlerVersion"
-    val userAgent: String by lazy {
-        USER_AGENT_TEMPLATE.format(serviceString)
-    }
+    val serviceString
+        get() = "[$serviceName]/$crawlerVersion"
+    val userAgent
+        get() = USER_AGENT_TEMPLATE.format(serviceString)
 
-    private object Metrics {
-        val requestCounter = AtomicInteger()
-    }
+    data class Metrics(val requestCount: Int = 0)
 
-    val requestCount
-        get() = Metrics.requestCounter.get()
+    var metrics = Metrics()
+        private set
 
     fun createDocumentQuery(url: URL): Connection {
-        Metrics.requestCounter.incrementAndGet()
+        metrics = metrics.copy(requestCount = metrics.requestCount + 1)
         return Jsoup
             .connect(url.toString())
             .userAgent(userAgent)
