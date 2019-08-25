@@ -5,6 +5,8 @@ import com.couchbase.client.java.query.dsl.Expression.*
 import com.couchbase.client.java.query.dsl.Sort
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.Sort.desc
+import de.hpi.cloud.common.utils.protobuf.TIMESTAMP_MILLIS
+import de.hpi.cloud.common.utils.protobuf.TIMESTAMP_NANOS
 
 fun and(vararg expressions: Expression?): Expression {
     return expressions.filterNotNull().run {
