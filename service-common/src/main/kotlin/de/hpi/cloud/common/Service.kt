@@ -28,7 +28,7 @@ class Service<S : io.grpc.BindableService>(
         val port = portOverride
             ?: System.getenv(PORT_VARIABLE)?.toInt()
             ?: PORT_DEFAULT
-        println("Starting $name on portOverride $port")
+        println("Starting $name on port $port")
 
         // Database
         cluster = openCouchbase()

@@ -2,11 +2,12 @@ package de.hpi.cloud.common
 
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
+import de.hpi.cloud.common.utils.couchbase.*
 import de.hpi.cloud.common.utils.protobuf.timestampNow
 
 abstract class Entity(val type: String, val version: Int) {
     val documentId
-        get() = "${type}_$id"
+        get() = "$type:$id"
     abstract val id: String
     open val fetchedAt = timestampNow()
 
@@ -17,11 +18,11 @@ abstract class Entity(val type: String, val version: Int) {
     fun toJsonObject(): JsonObject =
         JsonObject.from(
             mapOf(
-                "type" to type,
-                "version" to version,
-                "id" to id,
-                "meta" to metaToMap(),
-                "value" to valueToMap()
+                KEY_TYPE to type,
+                KEY_VERSION to version,
+                KEY_ID to id,
+                KEY_METADATA to metaToMap(),
+                KEY_VALUE to valueToMap()
             )
         )
 
