@@ -19,11 +19,11 @@ data class Article(
     override val id get() = preview.id.take(ID_MAX_LENGTH)
 
     data class ArticleCover(
-        val alt: String,
+        val alt: String?,
         val sources: Map<ImageSize, URL>
     ) {
         fun asMap(article: Article) = mapOf<String, Any>(
-            "source" to sources.map { it.key to it.value.toString() }.toMap(),
+            "source" to sources.map { it.key.toString() to it.value.toString() }.toMap(),
             "alt" to i18nSingle(alt, article.preview.language)
         )
     }

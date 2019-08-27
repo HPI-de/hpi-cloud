@@ -6,7 +6,11 @@ import de.hpi.cloud.common.utils.couchbase.getNestedObject
 import de.hpi.cloud.common.v1test.Image
 
 enum class ImageSize {
-    ORIGINAL
+    ORIGINAL;
+
+    override fun toString(): String {
+        return super.toString().toLowerCase()
+    }
 }
 
 fun JsonObject.getImage(name: String, size: ImageSize = ImageSize.ORIGINAL, preferredLanguage: String = "en"): Image? {
