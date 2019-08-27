@@ -80,12 +80,12 @@ class OpenMensaCrawler(
             "Alkohol" to "alcohol"
         )
 
-        var uniquifyIdThing: Int? = null
+        var uniquifyIdSuffix: Int? = null
 
         private val counter = canteenData.counterFinder(openMensaMeal)
         override val id
             get() = "${canteenData.canteenId}-${date.format(COMPACT_DATE_FORMAT)}-${counter
-                ?: openMensaId}${"_${uniquifyIdThing}".takeIf { uniquifyIdThing != null } ?: ""}"
+                ?: openMensaId}${"_${uniquifyIdSuffix}".takeIf { uniquifyIdSuffix != null } ?: ""}"
         private val openMensaId get() = openMensaMeal.id
         private val offerName = openMensaMeal.category
         private val title = openMensaMeal.name.replace("\n", "")
@@ -131,7 +131,7 @@ class OpenMensaCrawler(
                 .flatMap { duplicateMenuItems ->
                     if (duplicateMenuItems.value.size > 1)
                         duplicateMenuItems.value.mapIndexed { index, meal ->
-                            meal.apply { uniquifyIdThing = index + 1 }
+                            meal.apply { uniquifyIdSuffix = index + 1 }
                         }
                     else // no duplicate
                         duplicateMenuItems.value
