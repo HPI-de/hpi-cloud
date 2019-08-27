@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
         val articles = crawler
             .archive
             .query()
-            .takeWhile { updatePeriod != null || now - updatePeriod < it.publishedAt.toLocalDate() }
+            .takeWhile { updatePeriod == null || (now - updatePeriod < it.publishedAt.toLocalDate()) }
             .map { crawler.resolver.resolvePreview(it) }
         withBucket("news") { bucket ->
             var count = 0
