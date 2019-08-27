@@ -39,7 +39,7 @@ class HpiMediaArticleResolver(
                     ?: figure.selectFirst("img")?.attr("alt")?.takeIf { it.isNotBlank() }
 
                 Article.ArticleCover(
-                    alt = coverAlt!!,
+                    alt = coverAlt,
                     sources = mapOf(
                         ImageSize.ORIGINAL to crawler.baseUri.resolve(coverSrc).toURL()
                     )
