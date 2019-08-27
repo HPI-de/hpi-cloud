@@ -1,7 +1,10 @@
 package de.hpi.cloud.food
 
+import de.hpi.cloud.common.utils.couchbase.withBucket
+import java.time.LocalDate
+
 const val NAME = "HPI-MobileDev-Crawler[Food]"
-const val VERSION = "0.0.1"
+const val VERSION = "1.0.0"
 val CRAWLER_INFO
     get() = "$NAME/$VERSION"
 val USER_AGENT = "$CRAWLER_INFO klaxon/5.0.11 Kotlin-runtime/${KotlinVersion.CURRENT}"
@@ -36,23 +39,33 @@ val KNOWN_CANTEENS = setOf(
 )
 
 fun main(args: Array<String>) {
-    // TODO: flag allDays/today
-    println("~~~ $NAME ~~~")
+    val todayOnly = args.any { it.equals("--today", true) }
 
-    KNOWN_CANTEENS
-        .map { { OpenMensaCrawler(it) } }
-        .first().let {
-            val crawler = it()
-            println("Starting crawler $CRAWLER_INFO")
-            println("Using User-Agent=\"$USER_AGENT\"")
-            val days = crawler.queryDays()
-            days.filter { it.isOpen }
-                .forEach {
-                    println("Date ${it.date}:")
-                    crawler.queryMeals(it.date)
+    println("~~~ $NAME ~~~")
+    withBucket("food") {bucket ->
+        // TODO: clear previous data
+        KNOWN_CANTEENS
+            .map { OpenMensaCrawler(it) }
+            .forEach { crawler ->
+                println("Starting crawler $CRAWLER_INFO - ${crawler.canteenData.canteenId}")
+                println("Using User-Agent=\"$USER_AGENT\"")
+
+                val updateDay = { date: LocalDate ->
+                    println("Date: $date")
+                    crawler.queryMeals(date)
                         .forEach { meal ->
-                            println(meal.toJsonDocument())
+                            println("> ${meal.id}")
+                            bucket.upsert(meal.toJsonDocument())
                         }
                 }
-        }
+
+                if (todayOnly) {
+                    updateDay(LocalDate.now())
+                } else {
+                    crawler.queryDays()
+                        .filter { it.isOpen }
+                        .forEach { updateDay(it.date) }
+                }
+            }
+    }
 }
