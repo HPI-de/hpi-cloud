@@ -51,7 +51,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                 ?: Status.NOT_FOUND.throwException("Restaurant with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseRestaurant(): Restaurant {
+    private fun JsonObject.parseRestaurant(): Restaurant? {
         return Restaurant.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
@@ -146,7 +146,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                 ?: Status.NOT_FOUND.throwException("Label with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseLabel(): Label {
+    private fun JsonObject.parseLabel(): Label? {
         return Label.newBuilder().buildWith(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
