@@ -9,5 +9,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "de.hpi.cloud.myhpi.MyHpiServiceKt"
+    mainClassName = "de.hpi.cloud.feedback.FeedbackServiceKt"
 }

@@ -1,5 +1,13 @@
 package de.hpi.cloud.common.utils
 
+import java.util.*
+
+// region Array
+fun ByteArray.encodeBase64(): String {
+    return Base64.getEncoder().encodeToString(this)
+}
+// endregion
+
 // region List
 fun <E : Any> MutableList<out E>.removeFirst(filter: (E) -> Boolean): E? {
     val index = this.indexOfFirst(filter)

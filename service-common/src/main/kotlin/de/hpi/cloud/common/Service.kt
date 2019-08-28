@@ -2,46 +2,39 @@ package de.hpi.cloud.common
 
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.CouchbaseCluster
-import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
+import de.hpi.cloud.common.utils.couchbase.openCouchbase
 import io.grpc.Server
 import io.grpc.ServerBuilder
 
 
 class Service<S : io.grpc.BindableService>(
     val name: String,
-    port: Int,
+    portOverride: Int?,
     createServiceImpl: (Bucket) -> S
 ) {
     companion object {
-        const val COUCHBASE_CONNECT_TIMEOUT = 10000L
-        const val COUCHBASE_USERNAME_VARIABLE = "HPI_CLOUD_COUCHBASE_USERNAME"
-        const val COUCHBASE_PASSWORD_VARIABLE = "HPI_CLOUD_COUCHBASE_PASSWORD"
+        const val PORT_DEFAULT = 50051
+        const val PORT_VARIABLE = "HPI_CLOUD_PORT"
     }
 
-    protected val server: Server
-    protected val cluster: CouchbaseCluster
-    protected val bucket: Bucket
+    private val server: Server
+    private val cluster: CouchbaseCluster
+    private val bucket: Bucket
 
     var isStopped = false
         private set
 
     init {
+        val port = portOverride
+            ?: System.getenv(PORT_VARIABLE)?.toInt()
+            ?: PORT_DEFAULT
         println("Starting $name on port $port")
 
         // Database
-        cluster = CouchbaseCluster.create(
-            DefaultCouchbaseEnvironment.Builder().connectTimeout(COUCHBASE_CONNECT_TIMEOUT).build()
-        ).apply {
-            val username = System.getenv(COUCHBASE_USERNAME_VARIABLE)
-                ?: throw IllegalStateException("Couchbase username must be provided via the environment variable $COUCHBASE_USERNAME_VARIABLE")
-            val password = System.getenv(COUCHBASE_PASSWORD_VARIABLE)
-                ?: throw IllegalStateException("Couchbase password must be provided via the environment variable $COUCHBASE_PASSWORD_VARIABLE")
-            authenticate(username, password)
-        }
+        cluster = openCouchbase()
         bucket = cluster.openBucket(name)
 
         // Server
-        @Suppress("LeakingThis")
         server = ServerBuilder.forPort(port)
             .addService(createServiceImpl(bucket))
             .build()

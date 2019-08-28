@@ -17,10 +17,8 @@ import de.hpi.cloud.course.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-const val PORT_DEFAULT = 50050
-
 fun main(args: Array<String>) {
-    val service = Service("course", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { CourseServiceImpl(it) }
+    val service = Service("course", args.firstOrNull()?.toInt()) { CourseServiceImpl(it) }
     service.blockUntilShutdown()
 }
 

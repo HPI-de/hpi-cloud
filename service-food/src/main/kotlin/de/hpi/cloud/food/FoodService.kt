@@ -18,10 +18,8 @@ import de.hpi.cloud.food.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-const val PORT_DEFAULT = 50051
-
 fun main(args: Array<String>) {
-    val service = Service("food", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { FoodServiceImpl(it) }
+    val service = Service("food", args.firstOrNull()?.toInt()) { FoodServiceImpl(it) }
     service.blockUntilShutdown()
 }
 

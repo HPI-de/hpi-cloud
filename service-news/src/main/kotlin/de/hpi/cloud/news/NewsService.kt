@@ -14,14 +14,14 @@ import de.hpi.cloud.common.utils.couchbase.*
 import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
+import de.hpi.cloud.common.utils.protobuf.getImage
+import de.hpi.cloud.common.utils.protobuf.getTimestamp
 import de.hpi.cloud.news.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 
-const val PORT_DEFAULT = 50050
-
 fun main(args: Array<String>) {
-    val service = Service("news", args.firstOrNull()?.toInt() ?: PORT_DEFAULT) { NewsServiceImpl(it) }
+    val service = Service("news", args.firstOrNull()?.toInt()) { NewsServiceImpl(it) }
     service.blockUntilShutdown()
 }
 
