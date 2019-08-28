@@ -3,6 +3,7 @@ package de.hpi.cloud.common
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import de.hpi.cloud.common.utils.protobuf.timestampNow
+import de.hpi.cloud.common.utils.protobuf.toDbMap
 
 abstract class Entity(val type: String, val version: Int) {
     val documentId
@@ -13,7 +14,7 @@ abstract class Entity(val type: String, val version: Int) {
     // region JSON
     abstract fun valueToMap(): Map<String, Any?>
 
-    open fun metaToMap(): Map<String, Any?> = mapOf("fetchedAt" to fetchedAt)
+    open fun metaToMap(): Map<String, Any?> = mapOf("fetchedAt" to fetchedAt.toDbMap())
     fun toJsonObject(): JsonObject =
         JsonObject.from(
             mapOf(
