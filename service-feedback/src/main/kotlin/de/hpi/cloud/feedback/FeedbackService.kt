@@ -2,8 +2,8 @@ package de.hpi.cloud.feedback
 
 import com.couchbase.client.java.Bucket
 import de.hpi.cloud.common.Service
+import de.hpi.cloud.common.utils.couchbase.buildJsonDocument
 import de.hpi.cloud.common.utils.encodeBase64
-import de.hpi.cloud.common.utils.grpc.buildJsonDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.common.utils.tryParseUri
