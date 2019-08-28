@@ -27,5 +27,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "de.hpi.cloud.food.MainKt"
+    mainClassName = "de.hpi.cloud.food.crawler.MainKt"
 }
