@@ -17,6 +17,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food-crawler/hpi-cloud.service-food-crawler.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-food/hpi-cloud.service-food.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-myhpi/hpi-cloud.service-myhpi.iml" filepath="$PROJECT_DIR$/.idea/modules/service-myhpi/hpi-cloud.service-myhpi.iml" />
