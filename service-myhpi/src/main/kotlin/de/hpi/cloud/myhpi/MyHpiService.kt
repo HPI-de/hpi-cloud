@@ -5,7 +5,7 @@ import com.couchbase.client.java.document.json.JsonObject
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
-import de.hpi.cloud.common.utils.grpc.buildWith
+import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.myhpi.v1test.*
@@ -45,7 +45,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         }
 
     private fun JsonObject.parseInfoBit(): InfoBit? {
-        return InfoBit.newBuilder().buildWith(this) {
+        return InfoBit.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             description = it.getI18nString("description")
@@ -74,7 +74,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         }
 
     private fun JsonObject.parseAction(): Action? {
-        return Action.newBuilder().buildWith(this) {
+        return Action.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             it.getString("icon")?.let { i -> icon = i }

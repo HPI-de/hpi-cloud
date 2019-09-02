@@ -23,7 +23,7 @@ data class Article(
         val sources: Map<ImageSize, URL>
     ) {
         fun asMap(article: Article) = mapOf<String, Any>(
-            "source" to sources.map { it.key.toString() to it.value.toString() }.toMap(),
+            "source" to sources.map { it.key.dbKey to it.value.toString() }.toMap(),
             "alt" to i18nSingle(alt, article.preview.language)
         )
     }

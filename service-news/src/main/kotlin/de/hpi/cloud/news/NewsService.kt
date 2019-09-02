@@ -11,7 +11,7 @@ import com.couchbase.client.java.view.ViewQuery
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
-import de.hpi.cloud.common.utils.grpc.buildWith
+import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.common.utils.protobuf.getImage
@@ -73,14 +73,14 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
         }
 
     private fun JsonObject.parseArticle(): Article? {
-        return Article.newBuilder().buildWith(this) {
+        return Article.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             sourceId = it.getString("sourceId")
             link = it.getI18nString("link")
             title = it.getI18nString("title")
             publishDate = it.getTimestamp("publishedAt")
             addAllAuthorIds(it.getStringArray("authorIds").filterNotNull())
-            cover = it.getImage("cover")
+            it.getImage("cover")?.let { i -> cover = i }
             teaser = it.getI18nString("teaser")
             content = it.getI18nString("content")
             addAllCategories(it.getStringArray("categories").filterNotNull().mapNotNull { c -> getCategory(c) })
@@ -110,7 +110,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
         }
 
     private fun JsonObject.parseSource(): Source? {
-        return Source.newBuilder().buildWith(this) {
+        return Source.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             link = it.getI18nString("link")
@@ -144,7 +144,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
     }
 
     private fun JsonObject.parseCategory(): Category? {
-        return Category.newBuilder().buildWith(this) {
+        return Category.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
         }
@@ -175,7 +175,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
     }
 
     private fun JsonObject.parseTag(): Tag? {
-        return Tag.newBuilder().buildWith(this) {
+        return Tag.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             articleCount = it.getInt("articleCount") ?: 0

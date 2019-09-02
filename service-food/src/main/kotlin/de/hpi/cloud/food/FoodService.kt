@@ -11,9 +11,10 @@ import com.couchbase.client.java.query.dsl.functions.DateFunctions.millisToStr
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
-import de.hpi.cloud.common.utils.grpc.buildWith
+import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
+import de.hpi.cloud.common.utils.protobuf.getMoney
 import de.hpi.cloud.food.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
@@ -52,7 +53,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
         }
 
     private fun JsonObject.parseRestaurant(): Restaurant? {
-        return Restaurant.newBuilder().buildWith(this) {
+        return Restaurant.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
         }
@@ -107,7 +108,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
         }
 
     private fun JsonObject.parseMenuItem(): MenuItem? {
-        return MenuItem.newBuilder().buildWith(this) {
+        return MenuItem.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             restaurantId = it.getString("restaurantId")
             it.getDate("date")?.let { d -> date = d }
@@ -147,7 +148,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
         }
 
     private fun JsonObject.parseLabel(): Label? {
-        return Label.newBuilder().buildWith(this) {
+        return Label.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             it.getString("icon")?.let { i -> icon = i }

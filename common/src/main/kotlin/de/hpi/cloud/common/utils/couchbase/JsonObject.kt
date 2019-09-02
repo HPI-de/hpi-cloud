@@ -61,21 +61,6 @@ fun JsonObject.getDate(name: String): Date? {
 fun Date.toQueryString() = String.format("%04d-%02d-%02d", year, month, day)
 
 
-private const val MONEY_CURRENCY_CODE = "currencyCode"
-private const val MONEY_UNITS = "units"
-private const val MONEY_NANOS = "nanos"
-fun JsonObject.getMoney(name: String): Money? {
-    val obj = getNestedObject(name) ?: return null
-    val currencyCode = obj.getString(MONEY_CURRENCY_CODE) ?: return null
-    val units = obj.getLong(MONEY_UNITS) ?: return null
-    val nanos = obj.getInt(MONEY_NANOS) ?: return null
-    return Money.newBuilder()
-        .setCurrencyCode(currencyCode)
-        .setUnits(units)
-        .setNanos(nanos)
-        .build()
-}
-
 // region Array
 fun JsonObject.getNestedArray(name: String): JsonArray? {
     return getNested(name, JsonObject::getArray)
