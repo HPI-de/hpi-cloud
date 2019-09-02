@@ -10,7 +10,7 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
-import de.hpi.cloud.common.utils.grpc.buildWith
+import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.course.v1test.*
@@ -52,7 +52,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         }
 
     private fun JsonObject.parseCourseSeries(): CourseSeries? {
-        return CourseSeries.newBuilder().buildWith(this) {
+        return CourseSeries.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
             shortTitle = it.getI18nString("shortTitle")
@@ -92,7 +92,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         }
 
     private fun JsonObject.parseSemester(): Semester? {
-        return Semester.newBuilder().buildWith(this) {
+        return Semester.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             term = it.getString("term").parseSemesterTerm()
             year = it.getInt("year")
@@ -142,7 +142,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         }
 
     private fun JsonObject.parseCourse(): Course? {
-        return Course.newBuilder().buildWith(this) {
+        return Course.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             courseSeriesId = it.getString("courseSeriesId")
             semesterId = it.getString("semesterId")
@@ -175,7 +175,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         }
 
     private fun JsonObject.parseCourseDetail(): CourseDetail? {
-        return CourseDetail.newBuilder().buildWith(this) {
+        return CourseDetail.newBuilder().buildWithDocument(this) {
             courseId = getString(KEY_ID)
             it.getString("teletask")?.let { t -> teletask = t }
             putAllPrograms(it.getObject("programs").toMap()

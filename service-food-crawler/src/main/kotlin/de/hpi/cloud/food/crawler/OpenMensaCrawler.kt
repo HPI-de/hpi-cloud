@@ -3,7 +3,7 @@ package de.hpi.cloud.food.crawler
 import com.beust.klaxon.Klaxon
 import de.hpi.cloud.common.Entity
 import de.hpi.cloud.common.utils.couchbase.i18nMap
-import de.hpi.cloud.common.utils.protobuf.euro
+import de.hpi.cloud.common.utils.protobuf.euros
 import de.hpi.cloud.common.utils.protobuf.toDbMap
 import de.hpi.cloud.common.utils.protobuf.toTimestamp
 import de.hpi.cloud.food.crawler.utils.openStreamWith
@@ -111,13 +111,13 @@ data class MensaMeal(
             else it.key
         }
         .mapValues {
-            it.value.euro().toDbMap()
+            it.value.euros().toDbMap()
         }
 
     override fun valueToMap() = mapOf(
         "restaurantId" to canteenData.id,
         "openMensaId" to openMensaId,
-        "date" to date.toTimestamp().toDbMap(), // TODO: maybe use https://github.com/googleapis/googleapis/blob/master/google/type/date.proto
+        "date" to date.toTimestamp().toDbMap(),
         "offerName" to offerName,
         "title" to i18nMap(de = title),
         "counter" to i18nMap(de = counter),
