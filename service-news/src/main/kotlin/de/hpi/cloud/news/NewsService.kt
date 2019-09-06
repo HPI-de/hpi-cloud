@@ -2,11 +2,6 @@ package de.hpi.cloud.news
 
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.document.json.JsonObject
-import com.couchbase.client.java.query.N1qlParams
-import com.couchbase.client.java.query.N1qlQuery
-import com.couchbase.client.java.query.Select.select
-import com.couchbase.client.java.query.dsl.Expression.s
-import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.view.ViewQuery
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
@@ -38,28 +33,10 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
         request: ListArticlesRequest?,
         responseObserver: StreamObserver<ListArticlesResponse>?
     ) = unary(request, responseObserver, "listArticles") { req ->
-        val sourceId = req.sourceId?.trim()?.takeIf { it.isNotEmpty() }
-        if (!req.categoryId.isNullOrBlank()) TODO("Filtering by category_id is not yet supported")
-        if (!req.tagId.isNullOrBlank()) TODO("Filtering by tag_id is not yet supported")
-
-        val articles =
-            if (sourceId.isNullOrEmpty())
-                bucket.query(ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)).allRows()
-                    .map { it.document().content() }
-            else {
-                val statement = select("*")
-                    .from(bucket.name())
-                    .where(
-                        x(KEY_TYPE).eq(s("article"))
-                            .and(n(KEY_VALUE, "sourceId").eq(s(sourceId)))
-                    )
-                    .orderBy(*descTimestamp(n(KEY_VALUE, "publishedAt")))
-                bucket.query(N1qlQuery.simple(statement, N1qlParams.build().adhoc(false))).allRows()
-                    .map { it.value().getObject(bucket.name()) }
-            }
-
+        val articles = bucket.query(ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)).allRows()
+            .map { it.document().content().parseArticle() }
         ListArticlesResponse.newBuilder()
-            .addAllArticles(articles.map { it.parseArticle() })
+            .addAllArticles(articles)
             .build()
     }
 

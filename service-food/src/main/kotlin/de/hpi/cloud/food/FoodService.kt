@@ -118,12 +118,6 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
             }
             title = it.getI18nString("title")
             addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
-            it.getObject("substitution")?.also { sub ->
-                substitution = MenuItem.Substitution.newBuilder().apply {
-                    title = sub.getI18nString("title")
-                    addAllLabelIds(sub.getStringArray("labelIds").filterNotNull())
-                }.build()
-            }
         }
     }
     // endregion
