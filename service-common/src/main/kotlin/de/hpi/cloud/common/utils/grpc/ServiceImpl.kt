@@ -11,8 +11,8 @@ fun <Req : Any, Res : Any> BindableService.catchErrors(
     lambda: (Req, StreamObserver<Res>) -> Unit
 ) {
     try {
-        if (request == null) throw IllegalArgumentException("request is null")
-        if (responseObserver == null) throw IllegalArgumentException("responseObserver is null")
+        request ?: Status.INVALID_ARGUMENT.throwException("request is null")
+        responseObserver ?: Status.INVALID_ARGUMENT.throwException("responseObserver is null")
 
         lambda(request, responseObserver)
     } catch (e: Throwable) {

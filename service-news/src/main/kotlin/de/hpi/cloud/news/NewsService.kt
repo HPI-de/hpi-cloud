@@ -6,6 +6,7 @@ import com.couchbase.client.java.view.ViewQuery
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
@@ -33,11 +34,13 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
         request: ListArticlesRequest?,
         responseObserver: StreamObserver<ListArticlesResponse>?
     ) = unary(request, responseObserver, "listArticles") { req ->
-        val articles = bucket.query(ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)).allRows()
-            .map { it.document().content().parseArticle() }
-        ListArticlesResponse.newBuilder()
-            .addAllArticles(articles)
-            .build()
+        val (articles, newToken) = ViewQuery.from(DESIGN_ARTICLE, VIEW_BY_ID)
+            .paginate(bucket, req.pageSize, req.pageToken)
+
+        ListArticlesResponse.newBuilder().buildWith {
+            addAllArticles(articles.map { it.parseArticle() })
+            newToken?.let { t -> nextPageToken = t }
+        }
     }
 
     override fun getArticle(request: GetArticleRequest?, responseObserver: StreamObserver<Article>?) =

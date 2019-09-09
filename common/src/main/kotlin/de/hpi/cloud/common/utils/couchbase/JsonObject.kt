@@ -2,11 +2,8 @@ package de.hpi.cloud.common.utils.couchbase
 
 import com.couchbase.client.java.document.json.JsonArray
 import com.couchbase.client.java.document.json.JsonObject
-import com.google.protobuf.Timestamp
 import com.google.type.Date
-import com.google.type.Money
 import de.hpi.cloud.common.utils.protobuf.TIMESTAMP_MILLIS
-import de.hpi.cloud.common.v1test.Image
 import java.util.*
 
 const val NESTED_SEPARATOR = '.'
