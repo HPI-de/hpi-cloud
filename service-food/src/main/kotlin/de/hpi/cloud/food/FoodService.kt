@@ -2,15 +2,14 @@ package de.hpi.cloud.food
 
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.document.json.JsonObject
-import com.couchbase.client.java.query.N1qlParams
-import com.couchbase.client.java.query.N1qlQuery
-import com.couchbase.client.java.query.Select
 import com.couchbase.client.java.query.dsl.Expression.s
 import com.couchbase.client.java.query.dsl.Expression.x
+import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.functions.DateFunctions.millisToStr
 import com.couchbase.client.java.view.ViewQuery
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
@@ -35,12 +34,14 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
     override fun listRestaurants(
         request: ListRestaurantsRequest?,
         responseObserver: StreamObserver<ListRestaurantsResponse>?
-    ) = unary(request, responseObserver, "listRestaurants") { _ ->
-        val infoBits = bucket.query(ViewQuery.from(DESIGN_RESTAURANT, VIEW_BY_ID)).allRows()
-            .map { it.document().content().parseRestaurant() }
-        ListRestaurantsResponse.newBuilder()
-            .addAllRestaurants(infoBits)
-            .build()
+    ) = unary(request, responseObserver, "listRestaurants") { req ->
+        val (restaurants, newToken) = ViewQuery.from(DESIGN_RESTAURANT, VIEW_BY_ID)
+            .paginate(bucket, req.pageSize, req.pageToken) { it.parseRestaurant() }
+
+        ListRestaurantsResponse.newBuilder().buildWith {
+            addAllRestaurants(restaurants)
+            nextPageToken = newToken
+        }
     }
 
     override fun getRestaurant(request: GetRestaurantRequest?, responseObserver: StreamObserver<Restaurant>?) =
@@ -52,12 +53,11 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                 ?: Status.NOT_FOUND.throwException("Restaurant with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseRestaurant(): Restaurant? {
-        return Restaurant.newBuilder().buildWithDocument(this) {
+    private fun JsonObject.parseRestaurant() =
+        Restaurant.newBuilder().buildWithDocument<Restaurant, Restaurant.Builder>(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
         }
-    }
     // endregion
 
     // region MenuItem
@@ -68,34 +68,29 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
         val restaurantId = req.restaurantId?.trim()?.takeIf { it.isNotEmpty() }
         val date = if (req.hasDate()) req.date else null
 
-        val menuItems =
-            if (restaurantId == null && date == null)
-                bucket.query(ViewQuery.from(DESIGN_MENU_ITEM, VIEW_BY_ID)).allRows()
-                    .map { it.document().content() }
-            else {
-                val statement = Select.select("*")
-                    .from(bucket.name())
-                    .where(
-                        and(
-                            x(KEY_TYPE).eq(s("menuItem")),
-                            restaurantId?.let { n(KEY_VALUE, "restaurantId").eq(s(restaurantId)) },
-                            date?.let {
-                                millisToStr(
-                                    n(KEY_VALUE, "date", "millis"),
-                                    "1111-11-11"
-                                ).eq(s(it.toQueryString()))
-                            }
-                        )
-                    )
-                    .orderBy(*descTimestamp(n(KEY_VALUE, "publishedAt")))
-                bucket.query(N1qlQuery.simple(statement, N1qlParams.build().adhoc(false))).allRows()
-                    .map { it.value().getObject(bucket.name()) }
-            }
+        val (menuItems, newToken) = paginate(bucket, {
+            where(
+                and(
+                    x(KEY_TYPE).eq(s("menuItem")),
+                    restaurantId?.let { n(KEY_VALUE, "restaurantId").eq(s(restaurantId)) },
+                    date?.let {
+                        millisToStr(
+                            n(KEY_VALUE, "date", "millis"),
+                            "1111-11-11"
+                        ).eq(s(it.toQueryString()))
+                    }
+                )
+            )
+                .orderBy(
+                    *descTimestamp(v("date")),
+                    asc(v("offerName"))
+                )
+        }, req.pageSize, req.pageToken) { it.parseMenuItem() }
 
-
-        ListMenuItemsResponse.newBuilder()
-            .addAllItems(menuItems.map { it.parseMenuItem() })
-            .build()
+        ListMenuItemsResponse.newBuilder().buildWith {
+            addAllItems(menuItems)
+            nextPageToken = newToken
+        }
     }
 
     override fun getMenuItem(request: GetMenuItemRequest?, responseObserver: StreamObserver<MenuItem>?) =
@@ -107,29 +102,29 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                 ?: Status.NOT_FOUND.throwException("MenuItem with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseMenuItem(): MenuItem? {
-        return MenuItem.newBuilder().buildWithDocument(this) {
-            id = getString(KEY_ID)
-            restaurantId = it.getString("restaurantId")
-            it.getDate("date")?.let { d -> date = d }
-            it.getI18nString("counter")?.let { c -> counter = c }
-            it.getObject("prices").let { prices ->
-                putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
-            }
-            title = it.getI18nString("title")
-            addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
+    private fun JsonObject.parseMenuItem() = MenuItem.newBuilder().buildWithDocument<MenuItem, MenuItem.Builder>(this) {
+        id = getString(KEY_ID)
+        restaurantId = it.getString("restaurantId")
+        it.getDate("date")?.let { d -> date = d }
+        it.getI18nString("counter")?.let { c -> counter = c }
+        it.getObject("prices").let { prices ->
+            putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
         }
+        title = it.getI18nString("title")
+        addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
     }
     // endregion
 
     // region Label
     override fun listLabels(request: ListLabelsRequest?, responseObserver: StreamObserver<ListLabelsResponse>?) =
-        unary(request, responseObserver, "listLabels") { _ ->
-            val infoBits = bucket.query(ViewQuery.from(DESIGN_LABEL, VIEW_BY_ID)).allRows()
-                .map { it.document().content().parseLabel() }
-            ListLabelsResponse.newBuilder()
-                .addAllLabels(infoBits)
-                .build()
+        unary(request, responseObserver, "listLabels") { req ->
+            val (labels, newToken) = ViewQuery.from(DESIGN_LABEL, VIEW_BY_ID)
+                .paginate(bucket, req.pageSize, req.pageToken) { it.parseLabel() }
+
+            ListLabelsResponse.newBuilder().buildWith {
+                addAllLabels(labels)
+                nextPageToken = newToken
+            }
         }
 
     override fun getLabel(request: GetLabelRequest?, responseObserver: StreamObserver<Label>?) =
@@ -141,12 +136,10 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                 ?: Status.NOT_FOUND.throwException("Label with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseLabel(): Label? {
-        return Label.newBuilder().buildWithDocument(this) {
-            id = getString(KEY_ID)
-            title = it.getI18nString("title")
-            it.getString("icon")?.let { i -> icon = i }
-        }
+    private fun JsonObject.parseLabel() = Label.newBuilder().buildWithDocument<Label, Label.Builder>(this) {
+        id = getString(KEY_ID)
+        title = it.getI18nString("title")
+        it.getString("icon")?.let { i -> icon = i }
     }
     // endregion
 }

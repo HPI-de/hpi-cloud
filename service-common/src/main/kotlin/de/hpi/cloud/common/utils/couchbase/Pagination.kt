@@ -60,7 +60,7 @@ fun <T : Any> paginate(
     val pageSize = getPageSize(reqPageSize, defaultPageSize, maxPageSize)
     val off = (reqPageToken.isNotBlank()).then {
         if (!reqPageToken.startsWith(PAGINATION_TOKEN_VARIANT_2)) invalidPaginationToken()
-        reqPageToken.split(PAGINATION_TOKEN_SEPARATOR).getOrNull(2)?.toIntOrNull()
+        reqPageToken.split(PAGINATION_TOKEN_SEPARATOR).getOrNull(1)?.toIntOrNull()
             ?: invalidPaginationToken()
     } ?: 0
 
@@ -76,7 +76,7 @@ fun <T : Any> paginate(
     val objects = items.take(pageSize)
         .mapNotNull { mapper(it.value().getObject(bucket.name())) }
     val nextPageToken = (items.size == pageSize + 1)
-        .then { PAGINATION_TOKEN_VARIANT_1 + PAGINATION_TOKEN_SEPARATOR + (off + pageSize) }
+        .then { PAGINATION_TOKEN_VARIANT_2 + PAGINATION_TOKEN_SEPARATOR + (off + pageSize) }
         ?: "" // Empty string makes building the protobuf easier
     return objects to nextPageToken
 }
