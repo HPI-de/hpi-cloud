@@ -9,13 +9,14 @@ import io.grpc.Status
 
 
 private const val PAGINATION_TOKEN_SEPARATOR = ";"
-fun ViewQuery.paginate(
+fun <T : Any> ViewQuery.paginate(
     bucket: Bucket,
     reqPageSize: Int,
     reqPageToken: String,
     defaultPageSize: Int = 20,
-    maxPageSize: Int = 100
-): Pair<Collection<JsonObject>, String?> {
+    maxPageSize: Int = 100,
+    mapper: ((JsonObject) -> T?)
+): Pair<Collection<T>, String> {
     require(defaultPageSize > 0) { "defaultPageSize must be positive" }
     require(maxPageSize >= defaultPageSize) { "maxPageSize must be at least as large as defaultPageSize" }
 
@@ -44,5 +45,6 @@ fun ViewQuery.paginate(
     val nextPageToken = (items.size == pageSize + 1)
         .then { items.last() }
         ?.let { it.key().toString() + PAGINATION_TOKEN_SEPARATOR + it.id() }
-    return objects to nextPageToken
+        ?: "" // Empty string makes building the protobuf easier
+    return objects.mapNotNull { mapper(it) } to nextPageToken
 }
