@@ -26,3 +26,7 @@ fun descTimestamp(field: Expression): Array<Sort> {
 fun n(vararg part: String): Expression {
     return x(part.joinToString(NESTED_SEPARATOR.toString()) { i(it).toString() })
 }
+
+fun v(vararg part: String): Expression {
+    return n(KEY_VALUE, *part)
+}
