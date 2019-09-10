@@ -1,6 +1,7 @@
 package de.hpi.cloud.common.utils.couchbase
 
 import com.couchbase.client.java.Bucket
+import com.couchbase.client.java.document.json.JsonObject
 import com.couchbase.client.java.view.ViewQuery
 import com.couchbase.client.java.view.ViewRow
 
@@ -10,4 +11,7 @@ fun Bucket.querySingle(query: ViewQuery): ViewRow? {
 
 fun Bucket.get(design: String, view: String, key: String): ViewRow? {
     return querySingle(ViewQuery.from(design, view).key(key))
+}
+fun Bucket.getContent(design: String, view: String, key: String): JsonObject? {
+    return get(design, view, key)?.document()?.content()
 }
