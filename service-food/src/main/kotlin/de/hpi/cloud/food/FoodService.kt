@@ -72,12 +72,10 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
             where(
                 and(
                     x(KEY_TYPE).eq(s("menuItem")),
-                    restaurantId?.let { n(KEY_VALUE, "restaurantId").eq(s(restaurantId)) },
+                    restaurantId?.let { v("restaurantId").eq(s(restaurantId)) },
                     date?.let {
-                        millisToStr(
-                            n(KEY_VALUE, "date", "millis"),
-                            "1111-11-11"
-                        ).eq(s(it.toQueryString()))
+                        millisToStr(v("date", "millis"), "1111-11-11")
+                            .eq(s(it.toQueryString()))
                     }
                 )
             )
