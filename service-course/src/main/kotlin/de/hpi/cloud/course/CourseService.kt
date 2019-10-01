@@ -143,7 +143,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         id = getString(KEY_ID)
         courseSeriesId = it.getString("courseSeriesId")
         semesterId = it.getString("semesterId")
-        lecturer = it.getString("lecturer")
+        addLecturers(it.getString("lecturer"))
         addAllAssistants(it.getStringArray("assistants").filterNotNull())
         it.getString("website")?.let { w -> website = w }
     }
