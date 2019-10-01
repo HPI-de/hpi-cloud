@@ -2,8 +2,21 @@ package de.hpi.cloud.common.utils.grpc
 
 import io.grpc.Status
 
-fun checkArgRequired(arg: String?, argName: String) {
-    if (arg.isNullOrBlank()) Status.INVALID_ARGUMENT.throwException("Argument $argName is required")
+fun checkArgNotSet(arg: String?, argName: String) {
+    if (!arg.isNullOrBlank()) Status.INVALID_ARGUMENT.throwException("Argument $argName must not be set")
+}
+
+fun checkArgRequired(hasArg: Boolean, argName: String, ifArgSet: String? = null) {
+    if (!hasArg) argRequired(argName, ifArgSet)
+}
+
+fun checkArgRequired(arg: String?, argName: String, ifArgSet: String? = null) {
+    if (arg.isNullOrBlank()) argRequired(argName, ifArgSet)
+}
+
+fun argRequired(argName: String, ifArgSet: String? = null) {
+    Status.INVALID_ARGUMENT.throwException("Argument $argName is required"
+            + (ifArgSet?.let { " if argument $it is set" } ?: ""))
 }
 
 inline fun <reified M : com.google.protobuf.GeneratedMessageV3> notFound(id: String): Nothing {

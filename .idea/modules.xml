@@ -13,6 +13,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.iml" filepath="$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-course/hpi-cloud.service-course.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.iml" filepath="$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-crashreporting/hpi-cloud.service-crashreporting.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.iml" filepath="$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-feedback/hpi-cloud.service-feedback.test.iml" />

@@ -1,0 +1,13 @@
+plugins {
+    id "kotlin"
+    id "application"
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+}
+
+dependencies {
+    implementation(project(":service-common"))
+}
+
+application {
+    mainClassName = "de.hpi.cloud.crashreporting.CrashReportingServiceKt"
+}
