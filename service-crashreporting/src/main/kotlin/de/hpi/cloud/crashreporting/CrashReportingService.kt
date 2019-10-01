@@ -7,7 +7,7 @@ import de.hpi.cloud.common.utils.grpc.checkArgNotSet
 import de.hpi.cloud.common.utils.grpc.checkArgRequired
 import de.hpi.cloud.common.utils.grpc.unary
 import de.hpi.cloud.common.utils.protobuf.toDbMap
-import de.hpi.cloud.common.utils.then
+import de.hpi.cloud.common.utils.thenWith
 import de.hpi.cloud.crashreporting.v1test.CrashReport
 import de.hpi.cloud.crashreporting.v1test.CrashReportingServiceGrpc
 import de.hpi.cloud.crashreporting.v1test.CreateCrashReportRequest
@@ -70,13 +70,13 @@ class CrashReportingServiceImpl(private val bucket: Bucket) :
                     "appName" to req.crashReport.appName,
                     "appVersion" to req.crashReport.appVersion,
                     "appVersionCode" to req.crashReport.appVersionCode,
-                    "device" to req.crashReport.hasDevice().then(req.crashReport.device) {
+                    "device" to req.crashReport.hasDevice().thenWith(req.crashReport.device) {
                         mapOf(
                             "brand" to it.brand,
                             "model" to it.model
                         )
                     },
-                    "operatingSystem" to req.crashReport.hasOperatingSystem().then(req.crashReport.operatingSystem) {
+                    "operatingSystem" to req.crashReport.hasOperatingSystem().thenWith(req.crashReport.operatingSystem) {
                         mapOf(
                             "os" to it.os,
                             "version" to it.version
