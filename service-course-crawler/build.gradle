@@ -1,0 +1,31 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50")
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.1.0")
+    }
+}
+
+plugins {
+    id "kotlin"
+    id "application"
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+}
+
+repositories {
+    jcenter()
+    maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
+}
+
+dependencies {
+    implementation(project(":common"))
+
+    // Crawling
+    implementation("org.jsoup:jsoup:1.12.1")
+}
+
+application {
+    mainClassName = "de.hpi.cloud.course.crawler.MainKt"
+}
