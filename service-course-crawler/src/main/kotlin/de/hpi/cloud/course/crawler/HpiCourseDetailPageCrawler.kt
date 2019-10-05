@@ -175,7 +175,8 @@ class HpiCourseDetailPageCrawler(
             } catch (ex: DateTimeParseException) {
             }
         }
-        return LocalDate.of(9999, 1, 1)
+        println("Could not parse enrollment deadline \"$string\". Please check manually.")
+        return LocalDate.of(1, 1, 1)
     }
 
     private fun readStudyPathModules(element: Element): Pair<StudyPathDegree, Set<String>> {
