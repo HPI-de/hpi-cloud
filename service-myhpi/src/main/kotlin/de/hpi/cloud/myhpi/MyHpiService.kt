@@ -6,8 +6,10 @@ import com.couchbase.client.java.query.dsl.Expression.s
 import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.view.ViewQuery
+import com.google.protobuf.ByteString
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.decodeBase64
 import de.hpi.cloud.common.utils.grpc.*
 import de.hpi.cloud.common.utils.protobuf.getImage
 import de.hpi.cloud.myhpi.v1test.*
@@ -72,6 +74,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
             it.getI18nString("subtitle")?.let { s -> subtitle = s }
             it.getImage("cover")?.let { c -> cover = c }
             description = it.getI18nString("description")
+            it.getI18nString("content")?.let { c -> content = c }
             childDisplay = it.getString("childDisplay").parseInfoBitChildDisplay()
             addAllActionIds(it.getStringArray("actionIds"))
             addAllTagIds(it.allInfoBitTagIds())
@@ -84,7 +87,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
 
     private fun JsonObject.allInfoBitTagIds(): List<String> {
         val tags = getStringArray("tagIds").filterNotNull().toMutableList()
-        if (getString("parentId").isNotEmpty())
+        if (!getString("parentId").isNullOrEmpty())
             getInfoBit(getString("parentId"))?.tagIdsList?.let { tags.addAll(it) }
         return tags
     }
@@ -143,7 +146,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         return Action.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             title = it.getI18nString("title")
-            it.getString("icon")?.let { i -> icon = i }
+            it.getString("icon")?.let { i -> icon = ByteString.copyFrom(i.decodeBase64()) }
             when {
                 it.containsKey("link") ->
                     link = it.getObject("link").let { link ->
