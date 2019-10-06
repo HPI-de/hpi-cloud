@@ -36,39 +36,39 @@ fun main(args: Array<String>) {
     withBucket("course") { bucket ->
         if (args.contains("--clear"))
             deleteOldData(bucket)
-        
-            println("Crawling current semester")
-            println("Using User-Agent=\"$USER_AGENT_STRING\"")
 
-            var count = 0
-            CRAWLERS.asSequence()
-                .flatMap {
-                    println("Starting crawler for $it")
-                    it.listCourses()
+        println("Crawling current semester")
+        println("Using User-Agent=\"$USER_AGENT_STRING\"")
+
+        var count = 0
+        CRAWLERS.asSequence()
+            .flatMap {
+                println("Starting crawler for $it")
+                it.listCourses()
+            }
+            .map {
+                try {
+                    it.query()
+                } catch (ex: Exception) {
+                    println("error: $ex")
+                    null
                 }
-                .map {
-                    try {
-                        it.query()
-                    } catch (ex: Exception) {
-                        println("error: $ex")
-                        null
-                    }
-                }
-                .filterNotNull()
-                .forEach {
-                    println("Parsed course page with ID ${it.id}")
-                    if(args.contains("--all") || args.contains("--upsert-course-details"))
+            }
+            .filterNotNull()
+            .forEach {
+                println("Parsed course page with ID ${it.id}")
+                if (args.contains("--all") || args.contains("--upsert-course-details"))
                     bucket.upsert(it.toJsonDocument())
-                    if(args.contains("--all") || args.contains("--upsert-course"))
+                if (args.contains("--all") || args.contains("--upsert-course"))
                     bucket.upsert(it.course.toJsonDocument())
-                    if(args.contains("--all") || args.contains("--upsert-course-series"))
+                if (args.contains("--all") || args.contains("--upsert-course-series"))
                     bucket.upsert(it.course.courseSeries.toJsonDocument())
-                    count++
-                }
-            println("Upserted $count course page")
-        }
+                count++
+            }
+        println("Upserted $count course page")
     }
-    println("Crawler used ${requestCount} server requests")
+}
+println("Crawler used ${requestCount} server requests")
 }
 
 fun deleteOldData(bucket: Bucket) {
