@@ -58,7 +58,7 @@ data class CourseSeries(
 
         companion object {
             fun parse(string: String) = string.toLowerCase()
-                .split(" / ")
+                .split('/')
                 .flatMap {
                     when (it.trim()) {
                         "vorlesung" -> listOf(LECTURE)
@@ -69,6 +69,8 @@ data class CourseSeries(
                         "projektseminar" -> listOf(PROJECT, SEMINAR)
                         "vu" -> listOf(LECTURE, EXERCISE)
                         "sp" -> listOf(SEMINAR, PROJECT)
+                        "s" -> listOf(SEMINAR)
+                        "" -> listOf()
                         else -> {
                             println("Unknown type value \"$string\"")
                             listOf()
