@@ -7,13 +7,18 @@ data class CourseSeries(
     val title: String,
     val shortTitle: String,
     val abbreviation: String,
-    val ects: Int,
-    val hoursPerWeek: Int,
+    val ects: Int?,
+    val hoursPerWeek: Int?,
     val compulsory: Compulsory,
     val courseLanguage: CourseLanguage,
     val types: Set<Type>,
     val entityLanguage: String
 ) : Entity("courseSeries", 1) {
+    init {
+        fun invalidDataset(fieldName: String): Nothing = error("Invalid dataset: $fieldName not set")
+        if(ects == null) invalidDataset("ECTS")
+        if(hoursPerWeek == null) invalidDataset("Hours")
+    }
 
     override val id
         get() = title.toLowerCase()
@@ -93,8 +98,8 @@ data class CourseSeries(
         lateinit var title: String
         lateinit var shortTitle: String
         lateinit var abbreviation: String
-        var ects: Int = -1
-        var hoursPerWeek: Int = -1
+        var ects: Int? = null
+        var hoursPerWeek: Int? = null
         lateinit var compulsory: Compulsory
         lateinit var courseLanguage: CourseLanguage
         lateinit var types: Set<Type>
