@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
         if (args.contains("--clear"))
             deleteOldData(bucket)
         else {
-            println("Crawling current semester") // TODO: implement archive crawler
+            println("Crawling current semester")
             println("Using User-Agent=\"$USER_AGENT_STRING\"")
 
             var count = 0

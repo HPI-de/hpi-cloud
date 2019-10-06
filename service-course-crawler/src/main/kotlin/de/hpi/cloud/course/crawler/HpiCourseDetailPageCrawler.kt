@@ -82,8 +82,6 @@ class HpiCourseDetailPageCrawler(
                     lecturers = laa.lecturers
                     assistants = laa.assistants
 
-                    // TODO: search for teletask links
-
                     container.children()
                         .groupingSections(true) { node ->
                             node.`is`("h2").thenTake {
@@ -155,7 +153,7 @@ class HpiCourseDetailPageCrawler(
     }
 
     private fun parseDeadline(string: String): LocalDate? {
-        if(string.isBlank())
+        if (string.isBlank())
             return null
         try {
             return LocalDate.parse(
@@ -173,7 +171,9 @@ class HpiCourseDetailPageCrawler(
                     LONG_GERMAN_DATE_FORMAT
                 )
             } catch (ex: IndexOutOfBoundsException) {
+                // error handling below
             } catch (ex: DateTimeParseException) {
+                // error handling below
             }
         }
         println("Could not parse enrollment deadline \"$string\". Please check manually.")
