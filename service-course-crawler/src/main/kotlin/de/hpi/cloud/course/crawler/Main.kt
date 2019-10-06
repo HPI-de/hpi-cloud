@@ -11,8 +11,7 @@ import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
 
 const val NAME = "HPI-MobileDev-Crawler[Courses]"
-val USER_AGENT_TEMPLATE = "$NAME%s jsoup/1.12.1 Kotlin-runtime/${KotlinVersion.CURRENT}"
-val USER_AGENT_STRING = USER_AGENT_TEMPLATE.format(NAME)
+val USER_AGENT_STRING = "$NAME jsoup/1.12.1 Kotlin-runtime/${KotlinVersion.CURRENT}"
 
 val HPI_BASE_URI = URI("https://hpi.de/")
 
@@ -71,21 +70,21 @@ fun main(args: Array<String>) {
 }
 
 fun deleteOldData(bucket: Bucket) {
-    println("\n\ncourse")
+    println("Entered database cleanup mode\n")
     bucket.query(ViewQuery.from("course", VIEW_BY_ID))
         .allRows()
         .forEach {
-            println("remove ${it.id()}")
+            println("Remove Course ${it.id()}")
             try {
                 bucket.remove(it.id())
             } catch (ex: Exception) {
             }
         }
-    println("\n\ncourseSeries")
+    println()
     bucket.query(ViewQuery.from("courseSeries", VIEW_BY_ID))
         .allRows()
         .forEach {
-            println("remove ${it.id()}")
+            println("Remove CourseSeries ${it.id()}")
             try {
                 bucket.remove(it.id())
             } catch (ex: Exception) {
