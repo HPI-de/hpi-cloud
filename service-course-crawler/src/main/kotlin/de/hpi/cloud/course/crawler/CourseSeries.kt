@@ -17,7 +17,7 @@ data class CourseSeries(
 
     override val id
         get() = title.toLowerCase()
-            .replace(Regex("[^a-z]*"), "")
+            .replace(Regex("[^a-z0-9]*"), "")
 
     override fun valueToMap() = mapOf(
         "title" to i18nSingle(title, entityLanguage),
