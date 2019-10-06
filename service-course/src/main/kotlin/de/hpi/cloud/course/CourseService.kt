@@ -7,6 +7,7 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.Sort.desc
 import com.couchbase.client.java.view.ViewQuery
+import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
 import de.hpi.cloud.common.utils.grpc.buildWith
@@ -61,14 +62,16 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
             abbreviation = it.getI18nString("abbreviation")
             ects = it.getInt("ects")
             hoursPerWeek = it.getInt("hoursPerWeek")
-            mandatory = it.getBoolean("mandatory")
+            compulsory = it.getString("compulsory").parseCourseSeriesCompulsory()
             language = it.getString("language")
             addAllTypes(it.getStringArray("types").mapNotNull { t -> t?.parseCourseSeriesType() })
         }
 
-    private fun String.parseCourseSeriesType(): CourseSeries.Type {
-        return CourseSeries.Type.values().first { it.name.equals(this, true) }
-    }
+    private fun String.parseCourseSeriesCompulsory() = CourseSeries.Compulsory
+        .values().first { it.name.equals(this, ignoreCase = true) }
+
+    private fun String.parseCourseSeriesType() = CourseSeries.Type
+        .values().first { it.name.equals(this, ignoreCase = true) }
     // endregion
 
     // region Semester
@@ -143,8 +146,10 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         id = getString(KEY_ID)
         courseSeriesId = it.getString("courseSeriesId")
         semesterId = it.getString("semesterId")
-        lecturer = it.getString("lecturer")
+        addAllLecturers(it.getStringArray("lecturer").filterNotNull())
         addAllAssistants(it.getStringArray("assistants").filterNotNull())
+        it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
+        it.getDate("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
         it.getString("website")?.let { w -> website = w }
     }
     // endregion
