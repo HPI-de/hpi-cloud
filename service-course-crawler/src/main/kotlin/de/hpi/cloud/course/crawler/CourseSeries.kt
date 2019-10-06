@@ -16,8 +16,8 @@ data class CourseSeries(
 ) : Entity("courseSeries", 1) {
     init {
         fun invalidDataset(fieldName: String): Nothing = error("Invalid dataset: $fieldName not set")
-        if(ects == null) invalidDataset("ECTS")
-        if(hoursPerWeek == null) invalidDataset("Hours")
+        if (ects == null) invalidDataset("ECTS")
+        if (hoursPerWeek == null) invalidDataset("Hours")
     }
 
     override val id
