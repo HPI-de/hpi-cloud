@@ -109,12 +109,7 @@ class HpiCourseDetailPageCrawler(
                                                 "einschreibefrist" -> enrollmentDeadline = parseDeadline(value)
                                                 "maximale teilnehmerzahl" -> attendance = value.toInt()
                                                 "lehrform" -> types = CourseSeries.Type.parse(value)
-                                                "belegungsart" -> mandatory = when (value.toLowerCase()) {
-                                                    "wahlpflichtmodul" -> false
-                                                    "brückenmodul" -> false
-                                                    "pflichtmodul" -> true
-                                                    else -> error("Unknown mandatory status \"$value\"")
-                                                }
+                                                "belegungsart" -> compulsory = CourseSeries.Compulsory.parse(value)
                                                 "lehrsprache" -> CourseLanguage.parse(value).apply {
                                                     courseLanguage = this
                                                     courseEntityLanguage = name

@@ -9,7 +9,7 @@ data class CourseSeries(
     val abbreviation: String,
     val ects: Int,
     val hoursPerWeek: Int,
-    val mandatory: Boolean,
+    val compulsory: Compulsory,
     val courseLanguage: CourseLanguage,
     val types: Set<Type>,
     val entityLanguage: String
@@ -25,10 +25,25 @@ data class CourseSeries(
         "abbreviation" to i18nSingle(abbreviation, entityLanguage),
         "ects" to ects,
         "hoursPerWeek" to hoursPerWeek,
-        "mandatory" to mandatory,
+        "compulsory" to compulsory.name,
         "language" to courseLanguage.name,
         "types" to types.map { it.toString() }
     )
+
+    enum class Compulsory {
+        NON_COMPULSORY,
+        COMPULSORY,
+        BRIDGE;
+
+        companion object {
+            fun parse(string: String) = when (string.toLowerCase()) {
+                "wahlpflichtmodul" -> NON_COMPULSORY
+                "pflichtmodul" -> COMPULSORY
+                "brückenmodul" -> BRIDGE
+                else -> error("Unknown occupancy status \"$string\"")
+            }
+        }
+    }
 
     enum class Type {
         LECTURE,
@@ -78,7 +93,7 @@ data class CourseSeries(
         lateinit var abbreviation: String
         var ects: Int = -1
         var hoursPerWeek: Int = -1
-        var mandatory: Boolean = false
+        lateinit var compulsory: Compulsory
         lateinit var courseLanguage: CourseLanguage
         lateinit var types: Set<Type>
 
@@ -88,7 +103,7 @@ data class CourseSeries(
             abbreviation,
             ects,
             hoursPerWeek,
-            mandatory,
+            compulsory,
             courseLanguage,
             types,
             courseSeriesEntityLanguage
