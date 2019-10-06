@@ -151,7 +151,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         addAllAssistants(it.getStringArray("assistants").filterNotNull())
         it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
         it.getDateUsingIsoFormat("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
-        it.getString("website")?.let { w -> website = w }
+        it.getI18nString("website")?.let { w -> website = w }
     }
     // endregion
 
@@ -174,12 +174,12 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
                     @Suppress("UNCHECKED_CAST")
                     CourseDetail.ProgramList.newBuilder().addAllPrograms(p.value as List<String>).build()
                 })
-            it.getI18nString("description").let { d -> description = d }
-            it.getI18nString("requirements").let { r -> requirements = r }
-            it.getI18nString("learning").let { l -> learning = l }
-            it.getI18nString("examination").let { e -> examination = e }
-            it.getI18nString("dates").let { d -> dates = d }
-            it.getI18nString("literature").let { l -> literature = l }
+            it.getI18nString("description")?.let { d -> description = d }
+            it.getI18nString("requirements")?.let { r -> requirements = r }
+            it.getI18nString("learning")?.let { l -> learning = l }
+            it.getI18nString("examination")?.let { e -> examination = e }
+            it.getI18nString("dates")?.let { d -> dates = d }
+            it.getI18nString("literature")?.let { l -> literature = l }
         }
     // endregion
 }

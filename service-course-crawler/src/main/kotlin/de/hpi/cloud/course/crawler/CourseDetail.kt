@@ -15,12 +15,12 @@ data class CourseDetail(
     val dates: String?,
     val literature: String?,
     val entityLanguage: String
-) : Entity("course", 1) {
+) : Entity("courseDetail", 1) {
 
     override val id get() = course.id
 
     override fun valueToMap() = mapOf(
-        "teletask" to teletask.toString(),
+        "teletask" to teletask?.toString(),
         "programs" to programs
             .mapKeys { entry -> entry.key.toString() }
             .mapValues { entry -> entry.value.toList() },
