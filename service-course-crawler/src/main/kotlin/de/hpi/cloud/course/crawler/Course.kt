@@ -12,7 +12,7 @@ data class Course(
     val lecturers: List<String>,
     val assistants: List<String>,
     val attendance: Int? = null,
-    val enrollmentDeadline: LocalDate,
+    val enrollmentDeadline: LocalDate?,
     val website: URL,
     val entityLanguage: String
 ) : Entity("course", 1) {
@@ -25,7 +25,7 @@ data class Course(
         "lecturers" to lecturers,
         "assistants" to assistants,
         "attendance" to attendance,
-        "enrollmentDeadline" to enrollmentDeadline.format(DateTimeFormatter.ISO_DATE),
+        "enrollmentDeadline" to enrollmentDeadline?.format(DateTimeFormatter.ISO_DATE),
         "website" to i18nSingle(website.toString(), courseSeries.entityLanguage)
     )
 
@@ -42,7 +42,7 @@ data class Course(
         lateinit var lecturers: List<String>
         lateinit var assistants: List<String>
         var attendance: Int? = null
-        lateinit var enrollmentDeadline: LocalDate
+        var enrollmentDeadline: LocalDate? = null
         lateinit var website: URL
 
         fun build() = Course(

@@ -159,7 +159,9 @@ class HpiCourseDetailPageCrawler(
         }
     }
 
-    private fun parseDeadline(string: String): LocalDate {
+    private fun parseDeadline(string: String): LocalDate? {
+        if(string.isBlank())
+            return null
         try {
             return LocalDate.parse(
                 string
@@ -180,7 +182,7 @@ class HpiCourseDetailPageCrawler(
             }
         }
         println("Could not parse enrollment deadline \"$string\". Please check manually.")
-        return LocalDate.of(1, 1, 1)
+        return null
     }
 
     private fun readStudyPathModules(element: Element): Pair<StudyPathDegree, Set<String>> {
