@@ -66,9 +66,8 @@ fun main(args: Array<String>) {
                 count++
             }
         println("Upserted $count course page")
+        println("Crawler used ${requestCount} server requests")
     }
-}
-println("Crawler used ${requestCount} server requests")
 }
 
 fun deleteOldData(bucket: Bucket) {
