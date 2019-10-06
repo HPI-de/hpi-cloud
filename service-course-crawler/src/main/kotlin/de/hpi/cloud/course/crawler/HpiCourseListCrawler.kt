@@ -1,7 +1,5 @@
 package de.hpi.cloud.course.crawler
 
-import java.util.stream.Stream
-
 class HpiCourseListCrawler(
     val csi: HpiArchiveIdentifier
 ) {
@@ -13,11 +11,11 @@ class HpiCourseListCrawler(
     val studyPathId = csi.spd.studyPathName.replace(' ', '-').toLowerCase()
     val queryURL = courseListBaseURI.resolve("$studyPathId-${csi.spd.degree.abbr.toLowerCase()}/").toURL()
 
-    fun listCourses(): Stream<HpiCourseDetailPageCrawler> {
+    fun listCourses(): Sequence<HpiCourseDetailPageCrawler> {
         val doc = createDocumentQuery(queryURL).get()
 
         val links = doc.select("table.contenttable tr a.courselink")
-        return links.stream()
+        return links.asSequence()
             .map { el -> el.attr("href") }
             .map { HpiCourseDetailPageCrawler(HPI_BASE_URI.resolve(it).toURL()) }
     }

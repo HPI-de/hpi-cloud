@@ -1,11 +1,11 @@
 package de.hpi.cloud.course.crawler
 
-import de.hpi.cloud.common.Entity
+import com.couchbase.client.java.Bucket
+import com.couchbase.client.java.view.ViewQuery
+import de.hpi.cloud.common.utils.couchbase.VIEW_BY_ID
 import de.hpi.cloud.common.utils.couchbase.withBucket
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import java.io.File
-import java.io.PrintWriter
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,31 +33,62 @@ fun createDocumentQuery(url: URL): Connection {
         .userAgent(USER_AGENT_STRING)
 }
 
-fun main() {
+fun main(args: Array<String>) {
     println("Starting $NAME")
-    println("Crawling current semester") // TODO: implement archive crawler
-    println("Using User-Agent=\"$USER_AGENT_STRING\"")
-
     withBucket("course") { bucket ->
-        var count = 0
-        CRAWLERS
-            .stream()
-            .flatMap {
-                println("Starting crawler for ${it}")
-                it.listCourses()
-            }
-            .map { it.query() }
-            .parallel()
-            .forEach {
-                val name = it.id
+        if (args.contains("--clear"))
+            deleteOldData(bucket)
+        else {
+            println("Crawling current semester") // TODO: implement archive crawler
+            println("Using User-Agent=\"$USER_AGENT_STRING\"")
 
-                println("Parsed course page with ID ${it.id}")
-                bucket.upsert(it.toJsonDocument())
-                bucket.upsert(it.course.toJsonDocument())
-                bucket.upsert(it.course.courseSeries.toJsonDocument())
-                count++
-            }
-        println("Upserted $count course page")
+            var count = 0
+            CRAWLERS.asSequence()
+                .flatMap {
+                    println("Starting crawler for $it")
+                    it.listCourses()
+                }
+                .map {
+                    try {
+                        it.query()
+                    } catch (ex: Exception) {
+                        println("error: $ex")
+                        null
+                    }
+                }
+                .filterNotNull()
+                .forEach {
+                    println("Parsed course page with ID ${it.id}")
+                    bucket.upsert(it.toJsonDocument())
+                    bucket.upsert(it.course.toJsonDocument())
+                    bucket.upsert(it.course.courseSeries.toJsonDocument())
+                    count++
+                }
+            println("Upserted $count course page")
+        }
     }
     println("Crawler used ${requestCount} server requests")
+}
+
+fun deleteOldData(bucket: Bucket) {
+    println("\n\ncourse")
+    bucket.query(ViewQuery.from("course", VIEW_BY_ID))
+        .allRows()
+        .forEach {
+            println("remove ${it.id()}")
+            try {
+                bucket.remove(it.id())
+            } catch (ex: Exception) {
+            }
+        }
+    println("\n\ncourseSeries")
+    bucket.query(ViewQuery.from("courseSeries", VIEW_BY_ID))
+        .allRows()
+        .forEach {
+            println("remove ${it.id()}")
+            try {
+                bucket.remove(it.id())
+            } catch (ex: Exception) {
+            }
+        }
 }
