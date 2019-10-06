@@ -10,7 +10,7 @@ import java.net.URI
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
 
-const val NAME = "HPI-MobileDev-Crawler[Courses]"
+const val NAME = "HPI-MobileDev-Crawler[Course]"
 val USER_AGENT_STRING = "$NAME jsoup/1.12.1 Kotlin-runtime/${KotlinVersion.CURRENT}"
 
 val HPI_BASE_URI = URI("https://hpi.de/")
