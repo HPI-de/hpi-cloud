@@ -160,7 +160,7 @@ class HpiCourseDetailPageCrawler(
             return LocalDate.parse(
                 string
                     .replaceBefore("-", "")
-                    .trim('-'),
+                    .trim('-', ' '),
                 SIMPLE_GERMAN_DATE_FORMAT
             )
         } catch (ex: DateTimeParseException) {
