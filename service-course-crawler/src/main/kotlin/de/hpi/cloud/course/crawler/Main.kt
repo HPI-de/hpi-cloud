@@ -8,7 +8,6 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.net.URI
 import java.net.URL
-import java.util.concurrent.atomic.AtomicInteger
 
 const val NAME = "HPI-MobileDev-Crawler[Course]"
 val USER_AGENT_STRING = "$NAME jsoup/1.12.1 Kotlin-runtime/${KotlinVersion.CURRENT}"
@@ -24,9 +23,9 @@ val CRAWLERS = setOf(
     HpiCourseListCrawler("Cybersecurity", Degree.MASTER)
 )
 
-val requestCount = AtomicInteger(0)
+var requestCount = 0
 fun createDocumentQuery(url: URL): Connection {
-    requestCount.incrementAndGet()
+    requestCount++
     return Jsoup
         .connect(url.toString())
         .userAgent(USER_AGENT_STRING)
