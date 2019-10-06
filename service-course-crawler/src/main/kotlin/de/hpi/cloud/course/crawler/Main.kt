@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     withBucket("course") { bucket ->
         if (args.contains("--clear"))
             deleteOldData(bucket)
-        else {
+        
             println("Crawling current semester")
             println("Using User-Agent=\"$USER_AGENT_STRING\"")
 
@@ -57,8 +57,11 @@ fun main(args: Array<String>) {
                 .filterNotNull()
                 .forEach {
                     println("Parsed course page with ID ${it.id}")
+                    if(args.contains("--all") || args.contains("--upsert-course-details"))
                     bucket.upsert(it.toJsonDocument())
+                    if(args.contains("--all") || args.contains("--upsert-course"))
                     bucket.upsert(it.course.toJsonDocument())
+                    if(args.contains("--all") || args.contains("--upsert-course-series"))
                     bucket.upsert(it.course.courseSeries.toJsonDocument())
                     count++
                 }
