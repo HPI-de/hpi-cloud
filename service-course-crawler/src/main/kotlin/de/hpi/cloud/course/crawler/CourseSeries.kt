@@ -67,13 +67,12 @@ data class CourseSeries(
     }
 
     companion object {
-        inline fun build(entityLanguage: String, block: Builder.() -> Unit) =
-            Builder(entityLanguage).apply(block).build()
+        inline fun build(block: Builder.() -> Unit) =
+            Builder().apply(block).build()
     }
 
-    data class Builder(
-        val entityLanguage: String
-    ) {
+    class Builder {
+        lateinit var courseSeriesEntityLanguage: String
         lateinit var title: String
         lateinit var shortTitle: String
         lateinit var abbreviation: String
@@ -92,7 +91,7 @@ data class CourseSeries(
             mandatory,
             courseLanguage,
             types,
-            entityLanguage
+            courseSeriesEntityLanguage
         )
     }
 }

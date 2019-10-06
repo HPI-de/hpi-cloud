@@ -31,13 +31,12 @@ data class Course(
 
 
     companion object {
-        inline fun build(entityLanguage: String, block: Builder.() -> Unit) =
-            Builder(entityLanguage).apply(block).build()
+        inline fun build(block: Builder.() -> Unit) =
+            Builder().apply(block).build()
     }
 
-    data class Builder(
-        val entityLanguage: String
-    ) {
+    class Builder {
+        lateinit var courseEntityLanguage: String
         lateinit var courseSeries: CourseSeries
         lateinit var semester: Semester
         lateinit var lecturers: List<String>
@@ -54,7 +53,7 @@ data class Course(
             attendance,
             enrollmentDeadline,
             website,
-            entityLanguage
+            courseEntityLanguage
         )
     }
 }

@@ -61,10 +61,9 @@ class HpiCourseDetailPageCrawler(
         val container = doc.selectFirst(".tx-ciuniversity-course")
         val containerHtml = container.html()
 
-        val language = "DE"
-        return CourseDetail.build(language) {
-            course = Course.build(language) {
-                courseSeries = CourseSeries.build(language) {
+        return CourseDetail.build {
+            course = Course.build {
+                courseSeries = CourseSeries.build {
                     website = url
 
                     val titleMatch = TITLE_REGEX.matchEntire(container.selectFirst("h1").text().trim())!!
@@ -116,7 +115,12 @@ class HpiCourseDetailPageCrawler(
                                                     "pflichtmodul" -> true
                                                     else -> error("Unknown mandatory status \"$value\"")
                                                 }
-                                                "lehrsprache" -> courseLanguage = CourseLanguage.parse(value)
+                                                "lehrsprache" -> CourseLanguage.parse(value).apply {
+                                                    courseLanguage = this
+                                                    courseEntityLanguage = name
+                                                    courseDetailEntityLanguage = name
+                                                    courseSeriesEntityLanguage = name
+                                                }
                                                 else -> println("Unknown entry \"$key\"=\"$value\"")
                                             }
                                         }

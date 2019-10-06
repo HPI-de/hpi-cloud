@@ -33,13 +33,12 @@ data class CourseDetail(
     )
 
     companion object {
-        inline fun build(entityLanguage: String, block: Builder.() -> Unit) =
-            Builder(entityLanguage).apply(block).build()
+        inline fun build(block: Builder.() -> Unit) =
+            Builder().apply(block).build()
     }
 
-    data class Builder(
-        val entityLanguage: String
-    ) {
+    class Builder {
+        lateinit var courseDetailEntityLanguage: String
         lateinit var course: Course
         var teletask: URL? = null
         lateinit var programs: Map<StudyPathDegree, Set<String>>
@@ -59,7 +58,7 @@ data class CourseDetail(
             examination,
             dates,
             literature,
-            entityLanguage
+            courseDetailEntityLanguage
         )
     }
 }
