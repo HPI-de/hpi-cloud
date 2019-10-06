@@ -14,6 +14,7 @@ import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
+import de.hpi.cloud.common.utils.protobuf.getDateUsingIsoFormat
 import de.hpi.cloud.course.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
@@ -149,7 +150,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         addAllLecturers(it.getStringArray("lecturer").filterNotNull())
         addAllAssistants(it.getStringArray("assistants").filterNotNull())
         it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
-        it.getDate("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
+        it.getDateUsingIsoFormat("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
         it.getString("website")?.let { w -> website = w }
     }
     // endregion

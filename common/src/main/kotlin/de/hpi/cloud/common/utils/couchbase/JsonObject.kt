@@ -3,8 +3,6 @@ package de.hpi.cloud.common.utils.couchbase
 import com.couchbase.client.java.document.json.JsonArray
 import com.couchbase.client.java.document.json.JsonObject
 import com.google.type.Date
-import de.hpi.cloud.common.utils.protobuf.TIMESTAMP_MILLIS
-import java.util.*
 
 const val NESTED_SEPARATOR = '.'
 
@@ -43,20 +41,6 @@ fun JsonObject.getNestedInt(name: String): Int? {
     return getNested(name, JsonObject::getInt)
 }
 // endregion
-
-
-fun JsonObject.getDate(name: String): Date? {
-    val millis = getNestedObject(name)?.getLong(TIMESTAMP_MILLIS) ?: return null
-    val cal = Calendar.getInstance().apply { timeInMillis = millis }
-    return Date.newBuilder()
-        .setYear(cal.get(Calendar.YEAR))
-        .setMonth(cal.get(Calendar.MONTH) + 1)
-        .setDay(cal.get(Calendar.DATE))
-        .build()
-}
-
-fun Date.toQueryString() = String.format("%04d-%02d-%02d", year, month, day)
-
 
 // region Array
 fun JsonObject.getNestedArray(name: String): JsonArray? {
