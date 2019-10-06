@@ -72,24 +72,19 @@ fun main(args: Array<String>) {
 }
 
 fun deleteOldData(bucket: Bucket) {
+    fun Bucket.removeEverythingFromView(design: String) = bucket
+        .query(ViewQuery.from(design, VIEW_BY_ID))
+        .allRows()
+        .forEach {
+            println("Remove $design ${it.id()}")
+            try {
+                bucket.remove(it.id())
+            } catch (ex: Exception) {
+                // ignore strange "element not found" errors
+            }
+        }
     println("Entered database cleanup mode\n")
-    bucket.query(ViewQuery.from("course", VIEW_BY_ID))
-        .allRows()
-        .forEach {
-            println("Remove Course ${it.id()}")
-            try {
-                bucket.remove(it.id())
-            } catch (ex: Exception) {
-            }
-        }
+    bucket.removeEverythingFromView("course")
     println()
-    bucket.query(ViewQuery.from("courseSeries", VIEW_BY_ID))
-        .allRows()
-        .forEach {
-            println("Remove CourseSeries ${it.id()}")
-            try {
-                bucket.remove(it.id())
-            } catch (ex: Exception) {
-            }
-        }
+    bucket.removeEverythingFromView("courseSeries")
 }
