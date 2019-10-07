@@ -4,6 +4,7 @@ const val KEY_TYPE = "type"
 const val KEY_VERSION = "version"
 const val KEY_ID = "id"
 const val KEY_METADATA = "meta"
+const val KEY_METADATA_CREATED_AT = "createdAt"
 const val KEY_VALUE = "value"
 
 fun devDesignDoc(designDoc: String) = "dev_$designDoc"

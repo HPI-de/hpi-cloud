@@ -7,8 +7,12 @@
       <module name="hpi-cloud.main" target="12" />
       <module name="hpi-cloud.service-common.main" target="12" />
       <module name="hpi-cloud.service-common.test" target="12" />
+      <module name="hpi-cloud.service-course-crawler.main" target="12" />
+      <module name="hpi-cloud.service-course-crawler.test" target="12" />
       <module name="hpi-cloud.service-course.main" target="12" />
       <module name="hpi-cloud.service-course.test" target="12" />
+      <module name="hpi-cloud.service-crashreporting.main" target="12" />
+      <module name="hpi-cloud.service-crashreporting.test" target="12" />
       <module name="hpi-cloud.service-feedback.main" target="12" />
       <module name="hpi-cloud.service-feedback.test" target="12" />
       <module name="hpi-cloud.service-food-crawler.main" target="12" />
