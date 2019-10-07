@@ -10,3 +10,5 @@ fun String.tryParseUri(): URI? {
         null
     }
 }
+
+fun String.toUri() = URI(this)

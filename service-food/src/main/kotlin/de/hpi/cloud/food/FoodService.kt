@@ -13,7 +13,9 @@ import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
 import de.hpi.cloud.common.utils.grpc.unary
+import de.hpi.cloud.common.utils.protobuf.getDateUsingMillis
 import de.hpi.cloud.common.utils.protobuf.getMoney
+import de.hpi.cloud.common.utils.protobuf.toIsoString
 import de.hpi.cloud.food.v1test.*
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
@@ -75,7 +77,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                     restaurantId?.let { v("restaurantId").eq(s(restaurantId)) },
                     date?.let {
                         millisToStr(v("date", "millis"), "1111-11-11")
-                            .eq(s(it.toQueryString()))
+                            .eq(s(it.toIsoString()))
                     }
                 )
             )
@@ -103,7 +105,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
     private fun JsonObject.parseMenuItem() = MenuItem.newBuilder().buildWithDocument<MenuItem, MenuItem.Builder>(this) {
         id = getString(KEY_ID)
         restaurantId = it.getString("restaurantId")
-        it.getDate("date")?.let { d -> date = d }
+        it.getDateUsingMillis("date")?.let { d -> date = d }
         it.getI18nString("counter")?.let { c -> counter = c }
         it.getObject("prices").let { prices ->
             putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
