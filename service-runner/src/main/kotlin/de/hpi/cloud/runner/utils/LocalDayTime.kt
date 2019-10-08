@@ -10,7 +10,7 @@ val TemporalField.maximumValue get() = this.range().maximum
 class LocalDayTime(
     val dayOfWeek: DayOfWeek,
     val localTime: LocalTime
-) { // TODO: implement Temporal
+) {
     override fun toString() = "$dayOfWeek $localTime"
 
     fun nextOrSameAdjuster(): TemporalAdjuster {
