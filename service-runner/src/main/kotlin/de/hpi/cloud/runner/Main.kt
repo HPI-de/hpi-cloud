@@ -1,27 +1,25 @@
 package de.hpi.cloud.runner
 
-import de.hpi.cloud.runner.utils.at
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import java.io.File
-import java.time.DayOfWeek
-import java.time.LocalTime
 import java.util.concurrent.Executors
 import java.util.logging.Logger
 
-val logger = Logger.getLogger("Scheduler")
+val configFile = File("services.conf")
+val logger: Logger = Logger.getLogger("Scheduler")
 
 fun main() {
-    val services = listOf(
-        SimpleJavaService("javaTest", File("test.jar")) at setOf(
-            DayOfWeek.MONDAY at LocalTime.of(22, 54)
-        ),
-        SimpleCmdService("echo1", "echo", "monday", "first") at setOf(
-            DayOfWeek.MONDAY at LocalTime.of(22, 54, 0),
-            DayOfWeek.MONDAY at LocalTime.of(22, 54, 30)
-        ),
-        SimpleCmdService("echo2", "echo", "monday", "second") at setOf(
-            DayOfWeek.MONDAY at LocalTime.of(22, 54, 20)
-        )
+    println("Loading config from: ${configFile.absolutePath}")
+    val config = ConfigFactory.parseString(configFile.readText())
+    val services = readConfig(config)
+    val scheduler = Executors.newScheduledThreadPool(
+        if (config.hasPath("threads")) config.getInt("threads")
+        else 4
     )
-    val scheduler = Executors.newScheduledThreadPool(2)
     services.forEach { it.schedule(scheduler) }
 }
+
+fun readConfig(config: Config): List<SimpleRuntimeConfiguration> = config
+    .getConfigList("services")
+    .mapNotNull { SimpleRuntimeConfiguration.parse(it) }

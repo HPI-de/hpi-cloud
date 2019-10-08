@@ -17,10 +17,13 @@ plugins {
 repositories {
     jcenter()
     maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     api(project(":service-common"))
+
+    compile("io.github.config4k:config4k:0.4.1")
 }
 
 application {
