@@ -147,7 +147,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         id = getString(KEY_ID)
         courseSeriesId = it.getString("courseSeriesId")
         semesterId = it.getString("semesterId")
-        addAllLecturers(it.getStringArray("lecturer").filterNotNull())
+        addAllLecturers(it.getStringArray("lecturers").filterNotNull())
         addAllAssistants(it.getStringArray("assistants").filterNotNull())
         it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
         it.getDateUsingIsoFormat("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
