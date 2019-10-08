@@ -7,8 +7,10 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.functions.DateFunctions.millisToStr
 import com.couchbase.client.java.view.ViewQuery
+import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.getI18nString
 import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
@@ -38,7 +40,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
         responseObserver: StreamObserver<ListRestaurantsResponse>?
     ) = unary(request, responseObserver, "listRestaurants") { req ->
         val (restaurants, newToken) = ViewQuery.from(DESIGN_RESTAURANT, VIEW_BY_ID)
-            .paginate(bucket, req.pageSize, req.pageToken) { it.parseRestaurant() }
+            .paginate(bucket, req.pageSize, req.pageToken) { it.parseRestaurant(req) }
 
         ListRestaurantsResponse.newBuilder().buildWith {
             addAllRestaurants(restaurants)
@@ -51,14 +53,14 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Restaurant ID is required")
 
             bucket.get(DESIGN_RESTAURANT, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseRestaurant()
+                ?.document()?.content()?.parseRestaurant(req)
                 ?: Status.NOT_FOUND.throwException("Restaurant with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseRestaurant() =
+    private fun JsonObject.parseRestaurant(request: GeneratedMessageV3) =
         Restaurant.newBuilder().buildWithDocument<Restaurant, Restaurant.Builder>(this) {
             id = getString(KEY_ID)
-            title = it.getI18nString("title")
+            title = it.getI18nString("title", request)
         }
     // endregion
 
@@ -85,7 +87,7 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
                     *descTimestamp(v("date")),
                     asc(v("offerName"))
                 )
-        }, req.pageSize, req.pageToken) { it.parseMenuItem() }
+        }, req.pageSize, req.pageToken) { it.parseMenuItem(req) }
 
         ListMenuItemsResponse.newBuilder().buildWith {
             addAllItems(menuItems)
@@ -98,28 +100,29 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
             bucket.get(DESIGN_MENU_ITEM, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseMenuItem()
+                ?.document()?.content()?.parseMenuItem(req)
                 ?: Status.NOT_FOUND.throwException("MenuItem with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseMenuItem() = MenuItem.newBuilder().buildWithDocument<MenuItem, MenuItem.Builder>(this) {
-        id = getString(KEY_ID)
-        restaurantId = it.getString("restaurantId")
-        it.getDateUsingMillis("date")?.let { d -> date = d }
-        it.getI18nString("counter")?.let { c -> counter = c }
-        it.getObject("prices").let { prices ->
-            putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
+    private fun JsonObject.parseMenuItem(request: GeneratedMessageV3) =
+        MenuItem.newBuilder().buildWithDocument<MenuItem, MenuItem.Builder>(this) {
+            id = getString(KEY_ID)
+            restaurantId = it.getString("restaurantId")
+            it.getDateUsingMillis("date")?.let { d -> date = d }
+            it.getI18nString("counter", request)?.let { c -> counter = c }
+            it.getObject("prices").let { prices ->
+                putAllPrices(prices.names.map { p -> p to prices.getMoney(p) }.toMap())
+            }
+            title = it.getI18nString("title", request)
+            addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
         }
-        title = it.getI18nString("title")
-        addAllLabelIds(it.getStringArray("labelIds").filterNotNull())
-    }
     // endregion
 
     // region Label
     override fun listLabels(request: ListLabelsRequest?, responseObserver: StreamObserver<ListLabelsResponse>?) =
         unary(request, responseObserver, "listLabels") { req ->
             val (labels, newToken) = ViewQuery.from(DESIGN_LABEL, VIEW_BY_ID)
-                .paginate(bucket, req.pageSize, req.pageToken) { it.parseLabel() }
+                .paginate(bucket, req.pageSize, req.pageToken) { it.parseLabel(req) }
 
             ListLabelsResponse.newBuilder().buildWith {
                 addAllLabels(labels)
@@ -132,14 +135,15 @@ class FoodServiceImpl(private val bucket: Bucket) : FoodServiceGrpc.FoodServiceI
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Label ID is required")
 
             bucket.get(DESIGN_LABEL, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseLabel()
+                ?.document()?.content()?.parseLabel(req)
                 ?: Status.NOT_FOUND.throwException("Label with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseLabel() = Label.newBuilder().buildWithDocument<Label, Label.Builder>(this) {
-        id = getString(KEY_ID)
-        title = it.getI18nString("title")
-        it.getString("icon")?.let { i -> icon = i }
-    }
+    private fun JsonObject.parseLabel(request: GeneratedMessageV3) =
+        Label.newBuilder().buildWithDocument<Label, Label.Builder>(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title", request)
+            it.getString("icon")?.let { i -> icon = i }
+        }
     // endregion
 }
