@@ -23,7 +23,7 @@ repositories {
 dependencies {
     api(project(":service-common"))
 
-    compile("io.github.config4k:config4k:0.4.1")
+    implementation("io.github.config4k:config4k:0.4.1")
 }
 
 application {
