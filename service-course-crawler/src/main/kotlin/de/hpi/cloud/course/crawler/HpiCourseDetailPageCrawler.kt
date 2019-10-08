@@ -189,34 +189,47 @@ class HpiCourseDetailPageCrawler(
         return studyPathDegree to modules
     }
 
-    private fun readLecturerAndAssistants(containerHtml: String): LecturerAndAssistants {
-        val croppedHtml = LECTURER_ASSISTANTS_REGEX.find(containerHtml)!!
-            .groups[1]!!
-            .value.trim()
-
-        val assistantsIndex = croppedHtml.indexOf("Tutoren:")
-        return if (assistantsIndex == -1) {
-            LecturerAndAssistants(
-                LecturerAndAssistants.readNames(croppedHtml),
-                listOf()
-            )
-        } else {
-            LecturerAndAssistants(
-                LecturerAndAssistants.readNames(croppedHtml.substring(0, assistantsIndex)),
-                LecturerAndAssistants.readNames(croppedHtml.substring(assistantsIndex))
-            )
+    private fun readLecturerAndAssistants(containerHtml: String): LecturerAndAssistants = LECTURER_ASSISTANTS_REGEX
+        .find(containerHtml)!!
+        .groups[1]!!
+        .value.trim()
+        .let { croppedHtml ->
+            LecturerAndAssistants.parse(croppedHtml)
         }
-    }
 
     private data class LecturerAndAssistants(
         val lecturers: List<String>,
-        val assistants: List<String>
+        val assistants: List<String> = listOf()
     ) {
         companion object {
-            fun readNames(htmlSnippet: String) = Jsoup
-                .parse(htmlSnippet, HPI_BASE_URI.toString())
+            fun parse(string: String): LecturerAndAssistants = string.run {
+                indexOf("Tutoren:").let { i ->
+                    if (i == -1) {
+                        LecturerAndAssistants(
+                            readLecturers(this)
+                        )
+                    } else {
+                        LecturerAndAssistants(
+                            readLecturers(this.substring(0, i)),
+                            readAssistants(this.substring(i))
+                        )
+                    }
+                }
+            }
+
+            private fun readLecturers(htmlSnippet: String) = htmlSnippet
+                .replaceAfter("<br>", "") // Hacky hack to counter "Website zum Kurs:" and others
+                .let { Jsoup.parse(it, HPI_BASE_URI.toString()) }
+                .select("i")
+                .map { it.selectFirst("a") }
+                .map { it.text() }
+                .filter { !it.startsWith("http", ignoreCase = true) }
+
+            private fun readAssistants(htmlSnippet: String) = htmlSnippet
+                .let { Jsoup.parse(it, HPI_BASE_URI.toString()) }
                 .select("i > a")
                 .map { it.text() }
+                .filter { !it.startsWith("http", ignoreCase = true) }
         }
     }
 }
