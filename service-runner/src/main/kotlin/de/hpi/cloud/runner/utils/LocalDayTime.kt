@@ -8,10 +8,10 @@ infix fun DayOfWeek.at(time: LocalTime) = LocalDayTime(this, time)
 val TemporalField.maximumValue get() = this.range().maximum
 
 class LocalDayTime(
-    val dateOfWeek: DayOfWeek,
+    val dayOfWeek: DayOfWeek,
     val localTime: LocalTime
 ) { // TODO: implement Temporal
-    override fun toString() = "$dateOfWeek $localTime"
+    override fun toString() = "$dayOfWeek $localTime"
 
     fun nextOrSameAdjuster(): TemporalAdjuster {
         val wantedValue = SecondsOfWeek.getFrom(this)
@@ -51,7 +51,7 @@ class LocalDayTime(
                 )
 
         fun getFrom(dayOfWeek: DayOfWeek, localTime: LocalTime) = getFrom(dayOfWeek.value, localTime.toSecondOfDay())
-        fun getFrom(localDayTime: LocalDayTime) = getFrom(localDayTime.dateOfWeek, localDayTime.localTime)
+        fun getFrom(localDayTime: LocalDayTime) = getFrom(localDayTime.dayOfWeek, localDayTime.localTime)
         override fun getFrom(temporal: TemporalAccessor) =
             getFrom(temporal[ChronoField.DAY_OF_WEEK], temporal[ChronoField.SECOND_OF_DAY])
 
