@@ -52,7 +52,7 @@ class OpenMensaCrawler(
         .bufferedReader()
         .use { reader ->
             klaxon.parseArray<OpenMensaMeal>(reader)!!
-                .map { MensaMeal(canteenData, it, date) }
+                .flatMap { MensaMeal.parseMeals(canteenData, date, it) }
                 // meals with the same counter have the same id - let's fix this
                 .groupBy { it.id }
                 .flatMap {
@@ -75,6 +75,10 @@ data class MensaMeal(
     private val canteenData: CanteenData,
     val openMensaMeal: OpenMensaMeal,
     val date: LocalDate,
+    val counter: String?,
+    val title: String,
+    val offerName: String,
+    val labelIds: List<String>,
     val uniqueIdSuffix: Int? = null
 ) : Entity("menuItem", 1) {
     companion object {
@@ -90,6 +94,27 @@ data class MensaMeal(
             "Fisch" to "fish",
             "Alkohol" to "alcohol"
         )
+
+        fun parseMeals(canteenData: CanteenData, date: LocalDate, openMensaMeal: OpenMensaMeal): List<MensaMeal> {
+            return listOf(
+                MensaMeal(
+                    canteenData,
+                    openMensaMeal,
+                    date,
+                    canteenData.counterFinder(openMensaMeal),
+                    openMensaMeal.name.replace("\n", ""),
+                    openMensaMeal.category,
+                    parseLabelIds(canteenData, openMensaMeal)
+                )
+            )
+        }
+
+        fun parseLabelIds(canteenData: CanteenData, openMensaMeal: OpenMensaMeal): List<String> {
+            // TODO: Ulf does not support labels - if the notes field starts with "oder" there is an alternative offer
+            return openMensaMeal.notes.map { note ->
+                LABEL_MAPPING[note] ?: error("Unknown label \"${note}\"")
+            }
+        }
     }
 
     override val id
@@ -97,14 +122,8 @@ data class MensaMeal(
                 "-${date.format(OpenMensaCrawler.DATE_FORMAT_COMPACT)}" +
                 "-${counter ?: openMensaId}" +
                 (uniqueIdSuffix?.let { "_$it" } ?: "")
-
-    private val counter = canteenData.counterFinder(openMensaMeal)
     private val openMensaId get() = openMensaMeal.id
-    private val offerName = openMensaMeal.category
-    private val title = openMensaMeal.name.replace("\n", "")
-    private val labelIds = openMensaMeal.notes.map { note ->
-        LABEL_MAPPING[note] ?: error("Unknown label \"${note}\"")
-    }
+
     private val prices = openMensaMeal.prices
         .mapKeys {
             if (it.key == "others") "default"
