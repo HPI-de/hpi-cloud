@@ -7,9 +7,11 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.query.dsl.Sort.desc
 import com.couchbase.client.java.view.ViewQuery
+import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
+import de.hpi.cloud.common.utils.getI18nString
 import de.hpi.cloud.common.utils.grpc.buildWith
 import de.hpi.cloud.common.utils.grpc.buildWithDocument
 import de.hpi.cloud.common.utils.grpc.throwException
@@ -38,7 +40,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
         responseObserver: StreamObserver<ListCourseSeriesResponse>?
     ) = unary(request, responseObserver, "listCourseSeries") { req ->
         val (courseSeries, newToken) = ViewQuery.from(DESIGN_COURSE_SERIES, VIEW_BY_ID)
-            .paginate(bucket, req.pageSize, req.pageToken) { it.parseCourseSeries() }
+            .paginate(bucket, req.pageSize, req.pageToken) { it.parseCourseSeries(req) }
 
         ListCourseSeriesResponse.newBuilder().buildWith {
             addAllCourseSeries(courseSeries)
@@ -51,16 +53,16 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("CourseSeries ID is required")
 
             bucket.get(DESIGN_COURSE_SERIES, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseCourseSeries()
+                ?.document()?.content()?.parseCourseSeries(req)
                 ?: Status.NOT_FOUND.throwException("CourseSeries with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseCourseSeries() =
+    private fun JsonObject.parseCourseSeries(request: GeneratedMessageV3) =
         CourseSeries.newBuilder().buildWithDocument<CourseSeries, CourseSeries.Builder>(this) {
             id = getString(KEY_ID)
-            title = it.getI18nString("title")
-            shortTitle = it.getI18nString("shortTitle")
-            abbreviation = it.getI18nString("abbreviation")
+            title = it.getI18nString("title", request)
+            shortTitle = it.getI18nString("shortTitle", request)
+            abbreviation = it.getI18nString("abbreviation", request)
             ects = it.getInt("ects")
             hoursPerWeek = it.getInt("hoursPerWeek")
             compulsory = it.getString("compulsory").parseCourseSeriesCompulsory()
@@ -126,7 +128,7 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
                         asc(v("courseSeriesId")),
                         desc(v("semesterId"))
                     )
-            }, req.pageSize, req.pageToken) { it.parseCourse() }
+            }, req.pageSize, req.pageToken) { it.parseCourse(req) }
 
             ListCoursesResponse.newBuilder().buildWith {
                 addAllCourses(courses)
@@ -139,20 +141,21 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Course ID is required")
 
             bucket.get(DESIGN_COURSE, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseCourse()
+                ?.document()?.content()?.parseCourse(req)
                 ?: Status.NOT_FOUND.throwException("Course with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseCourse() = Course.newBuilder().buildWithDocument<Course, Course.Builder>(this) {
-        id = getString(KEY_ID)
-        courseSeriesId = it.getString("courseSeriesId")
-        semesterId = it.getString("semesterId")
-        addAllLecturers(it.getStringArray("lecturers").filterNotNull())
-        addAllAssistants(it.getStringArray("assistants").filterNotNull())
-        it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
-        it.getDateUsingIsoFormat("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
-        it.getI18nString("website")?.let { w -> website = w }
-    }
+    private fun JsonObject.parseCourse(request: GeneratedMessageV3) =
+        Course.newBuilder().buildWithDocument<Course, Course.Builder>(this) {
+            id = getString(KEY_ID)
+            courseSeriesId = it.getString("courseSeriesId")
+            semesterId = it.getString("semesterId")
+            addAllLecturers(it.getStringArray("lecturers").filterNotNull())
+            addAllAssistants(it.getStringArray("assistants").filterNotNull())
+            it.getInt("attendance")?.let { c -> attendance = UInt32Value.of(c) }
+            it.getDateUsingIsoFormat("enrollment_deadline ")?.let { d -> enrollmentDeadline = d }
+            it.getI18nString("website", request)?.let { w -> website = w }
+        }
     // endregion
 
     // region CourseDetail
@@ -161,11 +164,11 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
             if (req.courseId.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument course_id is required")
 
             bucket.get(DESIGN_COURSE_DETAIL, VIEW_BY_ID, req.courseId)
-                ?.document()?.content()?.parseCourseDetail()
+                ?.document()?.content()?.parseCourseDetail(req)
                 ?: Status.NOT_FOUND.throwException("CourseDetail with ID ${req.courseId} not found")
         }
 
-    private fun JsonObject.parseCourseDetail() =
+    private fun JsonObject.parseCourseDetail(request: GeneratedMessageV3) =
         CourseDetail.newBuilder().buildWithDocument<CourseDetail, CourseDetail.Builder>(this) {
             courseId = getString(KEY_ID)
             it.getString("teletask")?.let { t -> teletask = t }
@@ -174,12 +177,12 @@ class CourseServiceImpl(private val bucket: Bucket) : CourseServiceGrpc.CourseSe
                     @Suppress("UNCHECKED_CAST")
                     CourseDetail.ProgramList.newBuilder().addAllPrograms(p.value as List<String>).build()
                 })
-            it.getI18nString("description")?.let { d -> description = d }
-            it.getI18nString("requirements")?.let { r -> requirements = r }
-            it.getI18nString("learning")?.let { l -> learning = l }
-            it.getI18nString("examination")?.let { e -> examination = e }
-            it.getI18nString("dates")?.let { d -> dates = d }
-            it.getI18nString("literature")?.let { l -> literature = l }
+            it.getI18nString("description", request)?.let { d -> description = d }
+            it.getI18nString("requirements", request)?.let { r -> requirements = r }
+            it.getI18nString("learning", request)?.let { l -> learning = l }
+            it.getI18nString("examination", request)?.let { e -> examination = e }
+            it.getI18nString("dates", request)?.let { d -> dates = d }
+            it.getI18nString("literature", request)?.let { l -> literature = l }
         }
     // endregion
 }

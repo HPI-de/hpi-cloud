@@ -2,12 +2,13 @@ package de.hpi.cloud.common
 
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.CouchbaseCluster
+import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.utils.couchbase.openCouchbase
-import io.grpc.Server
-import io.grpc.ServerBuilder
+import de.hpi.cloud.common.utils.removeFirst
+import io.grpc.*
 
 
-class Service<S : io.grpc.BindableService>(
+class Service<S : BindableService>(
     val name: String,
     portOverride: Int?,
     createServiceImpl: (Bucket) -> S
@@ -15,6 +16,10 @@ class Service<S : io.grpc.BindableService>(
     companion object {
         const val PORT_DEFAULT = 50051
         const val PORT_VARIABLE = "HPI_CLOUD_PORT"
+
+        private val requestMetadata = mutableListOf<RequestWithMetadata<GeneratedMessageV3>>()
+        fun metadataForRequest(request: GeneratedMessageV3): Metadata? =
+            requestMetadata.firstOrNull { it.request === request }?.metadata
     }
 
     private val server: Server
@@ -36,6 +41,36 @@ class Service<S : io.grpc.BindableService>(
 
         // Server
         server = ServerBuilder.forPort(port)
+            .intercept(object : ServerInterceptor {
+                override fun <ReqT : Any?, RespT : Any?> interceptCall(
+                    call: ServerCall<ReqT, RespT>?,
+                    headers: Metadata?,
+                    next: ServerCallHandler<ReqT, RespT>?
+                ): ServerCall.Listener<ReqT> {
+                    val listener = next!!.startCall(call, headers)
+                    return object : ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(listener) {
+                        lateinit var request: GeneratedMessageV3
+
+                        override fun onMessage(message: ReqT) {
+                            require(message is GeneratedMessageV3)
+
+                            request = message
+                            requestMetadata.add(RequestWithMetadata(message, headers))
+                            super.onMessage(message)
+                        }
+
+                        override fun onComplete() {
+                            super.onComplete()
+                            requestMetadata.removeFirst { it.request === request }
+                        }
+
+                        override fun onCancel() {
+                            super.onCancel()
+                            requestMetadata.removeFirst { it.request === request }
+                        }
+                    }
+                }
+            })
             .addService(createServiceImpl(bucket))
             .build()
         server.start()
@@ -69,4 +104,9 @@ class Service<S : io.grpc.BindableService>(
     fun blockUntilShutdown() {
         server.awaitTermination()
     }
+
+    data class RequestWithMetadata<ReqT : GeneratedMessageV3>(
+        val request: ReqT,
+        val metadata: Metadata?
+    )
 }

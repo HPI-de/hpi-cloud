@@ -7,9 +7,11 @@ import com.couchbase.client.java.query.dsl.Expression.x
 import com.couchbase.client.java.query.dsl.Sort.asc
 import com.couchbase.client.java.view.ViewQuery
 import com.google.protobuf.ByteString
+import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Service
 import de.hpi.cloud.common.utils.couchbase.*
 import de.hpi.cloud.common.utils.decodeBase64
+import de.hpi.cloud.common.utils.getI18nString
 import de.hpi.cloud.common.utils.grpc.*
 import de.hpi.cloud.common.utils.protobuf.getImage
 import de.hpi.cloud.myhpi.v1test.*
@@ -46,8 +48,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
                     asc(v("parentId")),
                     asc(v("order"))
                 )
-        }, req.pageSize, req.pageToken) { it.parseInfoBit() }
-
+        }, req.pageSize, req.pageToken) { it.parseInfoBit(req) }
 
         ListInfoBitsResponse.newBuilder().buildWith {
             addAllInfoBits(infoBits)
@@ -59,25 +60,25 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         unary(request, responseObserver, "getInfoBit") { req ->
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("InfoBit ID is required")
 
-            getInfoBit(req.id) ?: notFound<InfoBit>(req.id)
+            getInfoBit(req.id, req) ?: notFound<InfoBit>(req.id)
         }
 
-    private fun getInfoBit(id: String): InfoBit? {
-        return bucket.getContent(ENTITY_INFO_BIT, VIEW_BY_ID, id)?.parseInfoBit()
+    private fun getInfoBit(id: String, request: GeneratedMessageV3): InfoBit? {
+        return bucket.getContent(ENTITY_INFO_BIT, VIEW_BY_ID, id)?.parseInfoBit(request)
     }
 
-    private fun JsonObject.parseInfoBit(): InfoBit? {
+    private fun JsonObject.parseInfoBit(request: GeneratedMessageV3): InfoBit? {
         return InfoBit.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
             it.getString("parentId")?.let { p -> parentId = p }
-            title = it.getI18nString("title")
-            it.getI18nString("subtitle")?.let { s -> subtitle = s }
-            it.getImage("cover")?.let { c -> cover = c }
-            description = it.getI18nString("description")
-            it.getI18nString("content")?.let { c -> content = c }
+            title = it.getI18nString("title", request)
+            it.getI18nString("subtitle", request)?.let { s -> subtitle = s }
+            it.getImage("cover", request)?.let { c -> cover = c }
+            description = it.getI18nString("description", request)
+            it.getI18nString("content", request)?.let { c -> content = c }
             childDisplay = it.getString("childDisplay").parseInfoBitChildDisplay()
             addAllActionIds(it.getStringArray("actionIds"))
-            addAllTagIds(it.allInfoBitTagIds())
+            addAllTagIds(it.allInfoBitTagIds(request))
         }
     }
 
@@ -85,10 +86,10 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         return InfoBit.ChildDisplay.values().first { it.name.equals(this, true) }
     }
 
-    private fun JsonObject.allInfoBitTagIds(): List<String> {
-        val tags = getStringArray("tagIds").filterNotNull().toMutableList()
+    private fun JsonObject.allInfoBitTagIds(request: GeneratedMessageV3): List<String> {
+        val tags = this.getStringArray("tagIds").filterNotNull().toMutableList()
         if (!getString("parentId").isNullOrEmpty())
-            getInfoBit(getString("parentId"))?.tagIdsList?.let { tags.addAll(it) }
+            getInfoBit(getString("parentId"), request)?.tagIdsList?.let { tags.addAll(it) }
         return tags
     }
     // endregion
@@ -99,7 +100,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         responseObserver: StreamObserver<ListInfoBitTagsResponse>?
     ) = unary(request, responseObserver, "listInfoBitTags") { req ->
         val (tags, newToken) = ViewQuery.from(ENTITY_TAG, VIEW_BY_ID)
-            .paginate(bucket, req.pageSize, req.pageToken) { it.parseTag() }
+            .paginate(bucket, req.pageSize, req.pageToken) { it.parseTag(req) }
 
         ListInfoBitTagsResponse.newBuilder().buildWith {
             addAllTags(tags)
@@ -111,13 +112,15 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
         unary(request, responseObserver, "getInfoBitTag") { req ->
             checkArgRequired(req.id, "id")
 
-            bucket.getContent(ENTITY_TAG, VIEW_BY_ID, req.id)?.parseTag()
+            bucket.getContent(ENTITY_TAG, VIEW_BY_ID, req.id)?.parseTag(req)
                 ?: notFound<InfoBitTag>(req.id)
         }
 
-    private fun JsonObject.parseTag(): InfoBitTag? = InfoBitTag.newBuilder().buildWithDocument(this) {
-        id = getString(KEY_ID)
-        title = it.getI18nString("title")
+    private fun JsonObject.parseTag(request: GeneratedMessageV3): InfoBitTag? {
+        return InfoBitTag.newBuilder().buildWithDocument(this) {
+            id = getString(KEY_ID)
+            title = it.getI18nString("title", request)
+        }
     }
     // endregion
 
@@ -125,7 +128,7 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
     override fun listActions(request: ListActionsRequest?, responseObserver: StreamObserver<ListActionsResponse>?) =
         unary(request, responseObserver, "listActions") { req ->
             val (actions, newToken) = ViewQuery.from(ENTITY_ACTION, VIEW_BY_ID)
-                .paginate(bucket, req.pageSize, req.pageToken) { it.parseAction() }
+                .paginate(bucket, req.pageSize, req.pageToken) { it.parseAction(req) }
 
             ListActionsResponse.newBuilder().buildWith {
                 addAllActions(actions)
@@ -138,26 +141,26 @@ class MyHpiServiceImpl(private val bucket: Bucket) : MyHpiServiceGrpc.MyHpiServi
             if (req.id.isNullOrEmpty()) Status.INVALID_ARGUMENT.throwException("Argument ID is required")
 
             bucket.get(ENTITY_ACTION, VIEW_BY_ID, req.id)
-                ?.document()?.content()?.parseAction()
+                ?.document()?.content()?.parseAction(req)
                 ?: Status.NOT_FOUND.throwException("Action with ID ${req.id} not found")
         }
 
-    private fun JsonObject.parseAction(): Action? {
+    private fun JsonObject.parseAction(request: GeneratedMessageV3): Action? {
         return Action.newBuilder().buildWithDocument(this) {
             id = getString(KEY_ID)
-            title = it.getI18nString("title")
+            title = it.getI18nString("title", request)
             it.getString("icon")?.let { i -> icon = ByteString.copyFrom(i.decodeBase64()) }
             when {
                 it.containsKey("link") ->
                     link = it.getObject("link").let { link ->
                         LinkAction.newBuilder()
-                            .setUrl(link.getI18nString("url"))
+                            .setUrl(link.getI18nString("url", request))
                             .build()
                     }
                 it.containsKey("text") ->
                     text = it.getObject("text").let { text ->
                         TextAction.newBuilder()
-                            .setContent(text.getI18nString("content"))
+                            .setContent(text.getI18nString("content", request))
                             .build()
                     }
                 else -> {

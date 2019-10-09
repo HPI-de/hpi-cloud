@@ -2,7 +2,6 @@ package de.hpi.cloud.common.utils.couchbase
 
 import com.couchbase.client.java.document.json.JsonArray
 import com.couchbase.client.java.document.json.JsonObject
-import com.google.type.Date
 
 const val NESTED_SEPARATOR = '.'
 
@@ -22,17 +21,6 @@ fun JsonObject.getNestedObject(name: String): JsonObject? {
 // region String
 fun JsonObject.getNestedString(name: String): String? {
     return getNested(name, JsonObject::getString)
-}
-
-val LANGUAGES = arrayOf("en", "de")
-fun JsonObject.getI18nString(name: String, preferredLanguage: String = "en"): String? {
-    val obj = getNestedObject(name)
-    return obj?.getString(preferredLanguage)
-        ?: LANGUAGES.asSequence()
-            .filter { it != preferredLanguage }
-            .map { obj?.getString(it) }
-            .firstOrNull { it != null }
-        ?: (obj?.toMap()?.values?.firstOrNull() as? String)
 }
 // endregion
 
