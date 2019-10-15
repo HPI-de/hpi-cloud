@@ -1,6 +1,8 @@
 package de.hpi.cloud.food.crawler
 
 import de.hpi.cloud.common.utils.couchbase.withBucket
+import de.hpi.cloud.food.crawler.canteens.Griebnitzsee
+import de.hpi.cloud.food.crawler.canteens.Ulf
 import java.time.LocalDate
 
 const val NAME = "HPI-MobileDev-Crawler[Food]"
@@ -9,23 +11,8 @@ const val CRAWLER_INFO = "$NAME/$VERSION"
 val USER_AGENT = "$CRAWLER_INFO klaxon/5.0.11 Kotlin-runtime/${KotlinVersion.CURRENT}"
 
 val KNOWN_CANTEENS = setOf(
-    CanteenData("mensaGriebnitzsee", 62) { meal ->
-        when {
-            // TODO: translations
-            meal.categoryMatches("Angebot 1") -> "1"
-            meal.categoryMatches("Angebot 2") -> "2"
-            meal.categoryMatches("Angebot 3") -> "3"
-            meal.categoryMatches("Angebot 4") -> "4"
-            meal.categoryMatches("Angebot 6") -> "Terrasse" // Hamburger
-            meal.categoryMatches("Nudeltheke") -> "Nudeltheke"
-            meal.categoryMatches("Tagessuppe") -> "Suppentheke"
-            else -> {
-                println("Unknown meal category/counter \"${meal.category}\" in ${meal.id}")
-                null
-            }
-        }
-    },
-    CanteenData("ulfsCafe", 112)
+    Griebnitzsee,
+    Ulf
 )
 
 fun main(args: Array<String>) {

@@ -2,6 +2,7 @@ package de.hpi.cloud.food.crawler
 
 import com.beust.klaxon.Klaxon
 import de.hpi.cloud.common.Entity
+import de.hpi.cloud.common.utils.asSingletonList
 import de.hpi.cloud.common.utils.couchbase.i18nMap
 import de.hpi.cloud.common.utils.protobuf.euros
 import de.hpi.cloud.common.utils.protobuf.toDbMap
@@ -53,16 +54,8 @@ class OpenMensaCrawler(
         .use { reader ->
             klaxon.parseArray<OpenMensaMeal>(reader)!!
                 .flatMap { MensaMeal.parseMeals(canteenData, date, it) }
-                // meals with the same counter have the same id - let's fix this
-                .groupBy { it.id }
-                .flatMap {
-                    if (it.value.size > 1)
-                        it.value.mapIndexed { index, meal ->
-                            meal.copy(uniqueIdSuffix = index + 1)
-                        }
-                    else // no duplicate
-                        it.value
-                }
+                .let { canteenData.mapReduce(it) }
+                .let { canteenData.deduplicate(it) }
         }
 }
 
@@ -82,39 +75,16 @@ data class MensaMeal(
     val uniqueIdSuffix: Int? = null
 ) : Entity("menuItem", 1) {
     companion object {
-        private val LABEL_MAPPING = mapOf(
-            "Vital" to "vital",
-            "Vegetarisch" to "vegetarian",
-            "Vegan" to "vegan",
-            "Schweinefleisch" to "pork",
-            "Rindfleisch" to "beef",
-            "Lamm" to "lamb",
-            "Knoblauch" to "garlic",
-            "Gefluegel" to "poultry",
-            "Fisch" to "fish",
-            "Alkohol" to "alcohol"
-        )
-
-        fun parseMeals(canteenData: CanteenData, date: LocalDate, openMensaMeal: OpenMensaMeal): List<MensaMeal> {
-            return listOf(
-                MensaMeal(
-                    canteenData,
-                    openMensaMeal,
-                    date,
-                    canteenData.counterFinder(openMensaMeal),
-                    openMensaMeal.name.replace("\n", ""),
-                    openMensaMeal.category,
-                    parseLabelIds(canteenData, openMensaMeal)
-                )
-            )
-        }
-
-        fun parseLabelIds(canteenData: CanteenData, openMensaMeal: OpenMensaMeal): List<String> {
-            // TODO: Ulf does not support labels - if the notes field starts with "oder" there is an alternative offer
-            return openMensaMeal.notes.map { note ->
-                LABEL_MAPPING[note] ?: error("Unknown label \"${note}\"")
-            }
-        }
+        fun parseMeals(canteenData: CanteenData, date: LocalDate, openMensaMeal: OpenMensaMeal) =
+            MensaMeal(
+                canteenData,
+                openMensaMeal,
+                date,
+                canteenData.findCounter(openMensaMeal),
+                openMensaMeal.name.replace("\n", ""),
+                canteenData.findOfferName(openMensaMeal),
+                canteenData.findLabels(openMensaMeal)
+            ).asSingletonList()
     }
 
     override val id
