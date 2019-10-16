@@ -21,7 +21,7 @@ fun <E : Any> MutableList<out E>.removeFirst(filter: (E) -> Boolean): E? {
     } else null
 }
 
-fun <T: Any> T.asSingletonList(): List<T> = listOf(this)
+fun <T : Any> T.asSingletonList(): List<T> = listOf(this)
 // endregion
 
 // region Map
@@ -30,6 +30,6 @@ fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V>?): Map<K, V> {
 }
 
 fun <K, V> Map<K, V?>.getOrElse(key: K, alternativeValue: () -> V?) =
-    if(this.containsKey(key)) this[key]
+    if (this.containsKey(key)) this[key]
     else alternativeValue()
 // endregion
