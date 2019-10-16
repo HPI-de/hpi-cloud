@@ -2,7 +2,6 @@ package de.hpi.cloud.food.crawler
 
 import com.beust.klaxon.Klaxon
 import de.hpi.cloud.common.Entity
-import de.hpi.cloud.common.utils.asSingletonList
 import de.hpi.cloud.common.utils.couchbase.i18nMap
 import de.hpi.cloud.common.utils.protobuf.euros
 import de.hpi.cloud.common.utils.protobuf.toDbMap
@@ -84,7 +83,7 @@ data class MensaMeal(
                 openMensaMeal.name.replace("\n", ""),
                 canteenData.findOfferName(openMensaMeal),
                 canteenData.findLabels(openMensaMeal)
-            ).asSingletonList()
+            ).let { listOf(it) }
     }
 
     override val id

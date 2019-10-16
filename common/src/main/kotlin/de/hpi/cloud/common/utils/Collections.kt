@@ -20,8 +20,6 @@ fun <E : Any> MutableList<out E>.removeFirst(filter: (E) -> Boolean): E? {
         elem
     } else null
 }
-
-fun <T : Any> T.asSingletonList(): List<T> = listOf(this)
 // endregion
 
 // region Map
