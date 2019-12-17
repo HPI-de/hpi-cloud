@@ -1,8 +1,0 @@
-plugins {
-    id "kotlin"
-    id "application"
-}
-
-dependencies {
-    api(project(":common"))
-}

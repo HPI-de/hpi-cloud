@@ -1,0 +1,15 @@
+package de.hpi.cloud.common.protobuf
+
+import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.GeneratedMessageV3.Builder
+
+inline fun <M : GeneratedMessageV3, B : Builder<B>> B.build(builder: B.() -> Unit): M {
+    builder()
+    @Suppress("UNCHECKED_CAST")
+    return build() as M
+}
+inline fun <T : Any, M : GeneratedMessageV3, B : Builder<B>> B.build(source: T, builder: B.(T) -> Unit): M {
+    builder(source)
+    @Suppress("UNCHECKED_CAST")
+    return build() as M
+}
