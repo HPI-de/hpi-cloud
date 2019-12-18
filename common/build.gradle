@@ -13,7 +13,7 @@ dependencies {
     // API
     api("com.google.protobuf:protobuf-java:3.6.1")
     api("io.grpc:grpc-stub:1.18.0")
-    api("de.hpi.cloud:hpi-cloud:0.0.11")
+    api("de.hpi.cloud:hpi-cloud:0.0.12")
 
     // Storage
     api("com.couchbase.client:java-client:2.7.9")
