@@ -17,10 +17,20 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
         val version: Int = 1
     )
 
-    abstract class ProtoSerializer<E : Entity<E>, Proto : GeneratedMessageV3> : Persistable.ProtoSerializer<E, Proto> {
-        abstract override fun toProto(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") entity: E, context: Context): Proto
-        fun toProto(wrapper: Wrapper<E>, context: Context): Proto = toProto(wrapper.value, context).apply {
-            this::class.java.getMethod("setId", String::class.java).invoke(this, wrapper.id)
+    abstract class ProtoSerializer<E : Entity<E>, Proto : GeneratedMessageV3, B : GeneratedMessageV3.Builder<B>> :
+        Persistable.ProtoSerializer<E, Proto> {
+        override fun toProto(persistable: E, context: Context): Proto {
+            throw UnsupportedOperationException("Entities can only be serialized using their wrapper")
+        }
+
+        abstract fun toProtoBuilder(entity: E, context: Context): B
+
+        fun toProto(wrapper: Wrapper<E>, context: Context): Proto {
+            val builder = toProtoBuilder(wrapper.value, context)
+            builder::class.java.getMethod("setId", String::class.java)
+                .invoke(builder, wrapper.id.value)
+            @Suppress("UNCHECKED_CAST")
+            return builder.build() as Proto
         }
     }
 
@@ -53,7 +63,7 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
 
 fun <E : Entity<E>> KClass<E>.entityCompanion(): Entity.Companion<E> {
     @Suppress("UNCHECKED_CAST")
-    return this::class.companionObjectInstance as Entity.Companion<E>
+    return this.companionObjectInstance as Entity.Companion<E>
 }
 
 @UseExperimental(ImplicitReflectionSerializer::class)

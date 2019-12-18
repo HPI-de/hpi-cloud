@@ -38,8 +38,6 @@ data class Wrapper<E : Entity<E>>(
             )
         }
 
-        fun <E : Entity<E>> createDocumentId(type: String, id: Id<E>): String = "$type:$id"
-
         inline fun <reified E : Entity<E>> jsonSerializerFor(): JsonSerializer<E> =
             JsonSerializer(E::class.jsonSerializer())
     }
@@ -99,7 +97,7 @@ data class Wrapper<E : Entity<E>>(
     }
 
     val documentId: String
-        get() = Companion.createDocumentId(type, id)
+        get() = id.documentId(type)
 
     // region Mutation
     fun withValue(context: Context, newValue: E): Wrapper<E> {

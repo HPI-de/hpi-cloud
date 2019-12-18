@@ -59,6 +59,7 @@ data class LocalDateTime(val value: RawLocalDateTime) : Persistable<LocalDateTim
             encoder.beginStructure(descriptor).let {
                 it.encodeLongElement(descriptor, 0, millis)
                 it.encodeIntElement(descriptor, 1, nanos)
+                it.endStructure(descriptor)
             }
         }
 
