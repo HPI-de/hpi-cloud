@@ -4,8 +4,6 @@ import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.CouchbaseAsyncCluster
 import com.couchbase.client.java.CouchbaseCluster
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment
-import com.couchbase.client.java.view.ViewQuery
-import com.couchbase.client.java.view.ViewResult
 
 const val COUCHBASE_CONNECT_TIMEOUT = 15000L
 const val COUCHBASE_NODES_VARIABLE = "HPI_CLOUD_COUCHBASE_NODES"
@@ -36,5 +34,3 @@ fun withBucket(bucket: String, nodesOverride: List<String> = emptyList(), runnab
             .close()
     }.disconnect()
 }
-
-fun ViewQuery.execute(bucket: Bucket): ViewResult = bucket.query(this)

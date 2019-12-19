@@ -2,6 +2,7 @@ package de.hpi.cloud.common.types
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.serializers.LocaleSerializer
+import de.hpi.cloud.common.utils.mapOfNotNull
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.LinkedHashMapSerializer
 import kotlinx.serialization.internal.NamedMapClassDescriptor
@@ -22,10 +23,10 @@ data class L10n<T>(
 
         fun <T> from(en: T? = null, de: T? = null): L10n<T> =
             L10n(
-                values = listOfNotNull(
+                values = mapOfNotNull(
                     en?.let { Locale.ENGLISH to en },
                     de?.let { Locale.GERMAN to de }
-                ).toMap()
+                )
             )
     }
 

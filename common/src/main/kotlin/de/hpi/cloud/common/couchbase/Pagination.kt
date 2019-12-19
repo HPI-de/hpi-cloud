@@ -22,7 +22,7 @@ const val PAGINATION_TOKEN_SEPARATOR = ";"
 const val PAGINATION_TOKEN_VARIANT_1 = "1" // "<startKey>;<startKeyDocId>"
 const val PAGINATION_TOKEN_VARIANT_2 = "2" // "<offset>"
 
-const val FIELD_ID = "id"
+const val FIELD_META_ID = "id"
 
 inline fun <reified E : Entity<E>> ViewQuery.paginate(
     bucket: Bucket,
@@ -43,7 +43,7 @@ inline fun <reified E : Entity<E>> ViewQuery.paginate(
     limit(pageSize + 1)
 
     // Execute query
-    val items = execute(bucket).allRows()
+    val items = bucket.query(this).allRows()
 
     val entities = items.take(pageSize)
         .map { it.document(RawJsonDocument::class.java).parseWrapper<E>() }
@@ -70,7 +70,7 @@ inline fun <reified E : Entity<E>> paginate(
     } ?: 0
 
     // Build query
-    val query = select(meta(bucket.name())[FIELD_ID]).from(bucket.name()).queryBuilder()
+    val query = select(meta(bucket.name())[FIELD_META_ID]).from(bucket.name()).queryBuilder()
         .run { limit(pageSize + 1) }
         .run { offset(off) }
         .let { N1qlQuery.simple(it, N1qlParams.build().adhoc(false)) }
@@ -78,7 +78,7 @@ inline fun <reified E : Entity<E>> paginate(
     // Execute query
     val items = bucket.query(query).allRows()
     val ids = items.take(pageSize)
-        .map { it.value().getString(FIELD_ID) }
+        .map { it.value().getString(FIELD_META_ID) }
     val entities = Observable.from(ids)
         .flatMap { bucket.async().get<E>(Id(it)) }
         .toList()
