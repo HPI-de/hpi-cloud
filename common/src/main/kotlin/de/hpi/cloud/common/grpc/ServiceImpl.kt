@@ -11,13 +11,14 @@ import io.grpc.stub.StreamObserver
 fun <Req : Any, Res : Any> BindableService.catchErrors(
     request: Req?,
     responseObserver: StreamObserver<Res>?,
-    lambda: (Req, StreamObserver<Res>) -> Unit
+    body: Context.(Req, StreamObserver<Res>) -> Unit
 ) {
     try {
         request ?: Status.INVALID_ARGUMENT.throwException("request is null")
         responseObserver ?: Status.INVALID_ARGUMENT.throwException("responseObserver is null")
 
-        lambda(request, responseObserver)
+        val context = Service.contextForRequest(request) ?: error("Metadata not found")
+        context.body(request, responseObserver)
     } catch (e: Throwable) {
         val status =
             if (e is StatusRuntimeException) e.status
@@ -35,10 +36,9 @@ fun <Req : Any, Res : Any> BindableService.unary(
     request: Req?,
     responseObserver: StreamObserver<Res>?,
     methodName: String,
-    lambda: (Context, Req) -> Res
+    body: Context.(Req) -> Res
 ) = catchErrors(request, responseObserver) { req, res ->
     println("${this::class.java.simpleName}.$methodName called")
-    val context = Service.contextForRequest(req) ?: throw IllegalStateException("Metadata not found")
-    res.onNext(lambda(context, req))
+    res.onNext(body(req))
     res.onCompleted()
 }
