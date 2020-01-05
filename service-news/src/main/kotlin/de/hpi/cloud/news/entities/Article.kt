@@ -2,10 +2,7 @@ package de.hpi.cloud.news.entities
 
 import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Context
-import de.hpi.cloud.common.entity.Entity
-import de.hpi.cloud.common.entity.Id
-import de.hpi.cloud.common.entity.Wrapper
-import de.hpi.cloud.common.entity.parse
+import de.hpi.cloud.common.entity.*
 import de.hpi.cloud.common.protobuf.builder
 import de.hpi.cloud.common.serializers.UriSerializer
 import de.hpi.cloud.common.types.*
@@ -37,7 +34,7 @@ data class Article(
             title = L10n.single(context, proto.title),
             publishDate = proto.publishDate.parse(context),
             authorIds = proto.authorIdsList.toSet(),
-            cover = proto.cover.parse<Image>(context),
+            cover = proto.cover.parseIf<Image>(context, proto.hasCover()),
             teaser = L10n.single(context, proto.teaser),
             content = L10n.single(context, proto.content.parse(context)),
             categories = proto.categoryIdsList.map { Id<Category>(it) }.toSet(),

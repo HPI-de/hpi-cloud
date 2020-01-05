@@ -78,3 +78,8 @@ fun <P : Persistable<P>, Proto : GeneratedMessageV3> KClass<P>.protoSerializer()
 inline fun <reified P : Persistable<P>> GeneratedMessageV3.parse(context: Context): P {
     return P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
 }
+
+inline fun <reified P : Persistable<P>> GeneratedMessageV3.parseIf(context: Context, hasField: Boolean): P? {
+    return if (!hasField) null
+    else P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
+}

@@ -4,10 +4,10 @@ import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.entity.Entity
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.protobuf.builder
+import de.hpi.cloud.common.serializers.UriSerializer
 import de.hpi.cloud.common.types.L10n
 import de.hpi.cloud.common.types.l10n
 import de.hpi.cloud.common.utils.parseUri
-import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Serializable
 import java.net.URI
 import de.hpi.cloud.news.v1test.Source as ProtoSource
@@ -15,7 +15,7 @@ import de.hpi.cloud.news.v1test.Source as ProtoSource
 @Serializable
 data class Source(
     val title: L10n<String>,
-    val link: L10n<@ContextualSerialization URI>
+    val link: L10n<@Serializable(UriSerializer::class) URI>
 ) : Entity<Source>() {
     companion object : Entity.Companion<Source>("source")
 
