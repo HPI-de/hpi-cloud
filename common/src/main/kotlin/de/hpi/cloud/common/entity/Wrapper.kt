@@ -63,6 +63,7 @@ data class Wrapper<E : Entity<E>>(
                 it.encodeStringElement(descriptor, 2, obj.id.value)
                 it.encodeSerializableElement(descriptor, 3, Metadata.serializer(), obj.metadata)
                 it.encodeSerializableElement(descriptor, 4, entitySerializer, obj.value)
+                it.endStructure(descriptor)
             }
         }
 
