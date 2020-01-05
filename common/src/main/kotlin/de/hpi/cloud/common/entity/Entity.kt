@@ -10,6 +10,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import java.net.URI
 import kotlin.reflect.KClass
+import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.companionObjectInstance
 
 abstract class Entity<E : Entity<E>> : Persistable<E>() {
@@ -62,18 +63,22 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
 
 fun <E : Entity<E>> KClass<E>.entityCompanion(): Entity.Companion<E> {
     @Suppress("UNCHECKED_CAST")
-    return this.companionObjectInstance as Entity.Companion<E>
+    return companionObjectInstance as Entity.Companion<E>
 }
+
 
 @UseExperimental(ImplicitReflectionSerializer::class)
 fun <E : Entity<E>> KClass<E>.jsonSerializer(): KSerializer<E> {
-    return this.serializer()
+    return serializer()
 }
 
 fun <P : Persistable<P>, Proto : GeneratedMessageV3> KClass<P>.protoSerializer(): Persistable.ProtoSerializer<P, Proto> {
     @Suppress("UNCHECKED_CAST")
-    return this.nestedClasses.first { it.simpleName == "ProtoSerializer" }.objectInstance as Persistable.ProtoSerializer<P, Proto>
+    return nestedClasses
+        .first { Persistable.ProtoSerializer::class in it.allSuperclasses }
+        .objectInstance as Persistable.ProtoSerializer<P, Proto>
 }
+
 
 inline fun <reified P : Persistable<P>> GeneratedMessageV3.parse(context: Context): P {
     return P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
