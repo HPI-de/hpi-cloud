@@ -3,6 +3,7 @@ package de.hpi.cloud.common.entity
 import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.Persistable
+import de.hpi.cloud.common.protobuf.setId
 import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.KSerializer
@@ -27,8 +28,8 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
 
         fun toProto(wrapper: Wrapper<E>, context: Context): Proto {
             val builder = toProtoBuilder(wrapper.value, context)
-            builder::class.java.getMethod("setId", String::class.java)
-                .invoke(builder, wrapper.id.value)
+            builder.setId(wrapper.id.value)
+
             @Suppress("UNCHECKED_CAST")
             return builder.build() as Proto
         }
@@ -36,7 +37,7 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
 
     fun companion(): Companion<E> {
         @Suppress("UNCHECKED_CAST")
-        return this::class.companionObjectInstance as Companion<E>
+        return (this::class as KClass<E>).entityCompanion()
     }
 
     fun createNewWrapper(
@@ -46,12 +47,10 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
         permissions: Permissions = emptyMap(),
         published: Boolean = true
     ): Wrapper<E> {
-        val companion = companion()
-
         @Suppress("UNCHECKED_CAST")
         return Wrapper.create(
             context = context,
-            companion = companion,
+            companion = companion(),
             id = id,
             sources = sources,
             permissions = permissions,

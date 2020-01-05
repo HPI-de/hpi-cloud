@@ -22,7 +22,6 @@ inline fun <reified E : Entity<E>> RawJsonDocument.parseWrapper(): Wrapper<E> {
 
 inline fun <reified E : Entity<E>> Bucket.get(id: Id<E>): Wrapper<E>? {
     return get(id.documentId<E>(), RawJsonDocument::class.java)?.parseWrapper()
-        ?: return null
 }
 
 inline fun <reified E : Entity<E>> AsyncBucket.get(id: Id<E>): Observable<Wrapper<E>> {
