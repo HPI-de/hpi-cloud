@@ -45,6 +45,7 @@ class UpdateEvent<E : Entity<E>> private constructor(
             )
     }
 }
+
 @SerialName("keepAlive")
 @Serializable
 class KeepAliveEvent private constructor(
@@ -97,7 +98,43 @@ sealed class DelayedEvent : Event() {
     abstract val effectiveFrom: LocalDateTime?
 
     val isEffectiveNow: Boolean
-        get() = effectiveFrom?.let { it.value < RawLocalDateTime.now() } ?: true
+        get() {
+            val value = effectiveFrom?.value ?: return true
+            return value < RawLocalDateTime.now()
+        }
+}
+
+/**
+ * Calculates whether the delayed event is effective now.
+ *
+ * An event is considered effective when of all currently effective events of that type the active ones outweigh the
+ * inactive ones.
+ *
+ * ## Example:
+ * An entity has four events of type [DeletedChangeEvent]:
+ * - `effectiveFrom = <now - 1 h>, isDeleted = true`
+ * - `effectiveFrom = <now - 1 h>, isDeleted = true`
+ * - `effectiveFrom = <now - 10 min>, isDeleted = false`
+ * - `effectiveFrom = <now + 1 min>, isDeleted = false`
+ *
+ * We`re only considering currently effective events, so the last event is ignored for now. By default, entities are not
+ * deleted — hence [activeByDefault] is false.
+ *
+ * We now have two deletions vs one restore. `2 + (-1) = 1 >= 1`, hence the entity is deleted.
+ *
+ * When the fourth event becomes effective, our sum becomes `0` and the entity will be restored.
+ *
+ * > **Note:** We use this behaviour to stay predictable on multi-user environments.
+ */
+internal inline fun <reified E : DelayedEvent> Metadata.isDelayedEventEffective(
+    activeByDefault: Boolean,
+    isActive: (E) -> Boolean
+): Boolean {
+    // If it defaults to active, no or balanced events means active. Otherwise, we need at least one more active event.
+    val threshold = if (activeByDefault) 0 else 1
+    return eventsOfType<E>()
+        .filter { it.isEffectiveNow }
+        .sumBy { if (isActive(it)) 1 else -1 } >= threshold
 }
 
 @SerialName("deletedChange")
@@ -109,7 +146,7 @@ class DeletedChangeEvent private constructor(
     override val effectiveFrom: LocalDateTime? = null
 ) : DelayedEvent() {
     companion object {
-        fun <E : Entity<E>> create(
+        fun create(
             context: Context,
             isDeleted: Boolean,
             effectiveFrom: LocalDateTime? = null
@@ -130,7 +167,7 @@ class PublishedChangeEvent private constructor(
     override val effectiveFrom: LocalDateTime? = null
 ) : DelayedEvent() {
     companion object {
-        fun <E : Entity<E>> create(
+        fun create(
             context: Context,
             isPublished: Boolean,
             effectiveFrom: LocalDateTime? = null

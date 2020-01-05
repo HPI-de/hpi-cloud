@@ -139,11 +139,6 @@ data class Wrapper<E : Entity<E>>(
         )
     }
 
-    val isDeleted: Boolean
-        get() = metadata.eventsOfType<DeletedChangeEvent>()
-            .filter { it.isEffectiveNow }
-            .sumBy { if (it.isDeleted) -1 else 1 } < 0
-
     fun withDeleted(
         context: Context,
         isDeleted: Boolean,
@@ -151,15 +146,10 @@ data class Wrapper<E : Entity<E>>(
     ): Wrapper<E> {
         return copy(
             metadata = metadata.copy(
-                events = metadata.events + DeletedChangeEvent.create<E>(context, isDeleted, effectiveFrom)
+                events = metadata.events + DeletedChangeEvent.create(context, isDeleted, effectiveFrom)
             )
         )
     }
-
-    val isPublished: Boolean
-        get() = metadata.eventsOfType<PublishedChangeEvent>()
-            .filter { it.isEffectiveNow }
-            .sumBy { if (it.isPublished) 1 else -1 } > 0
 
     fun withPublished(
         context: Context,
@@ -168,7 +158,7 @@ data class Wrapper<E : Entity<E>>(
     ): Wrapper<E> {
         return copy(
             metadata = metadata.copy(
-                events = metadata.events + PublishedChangeEvent.create<E>(context, isPublished, effectiveFrom)
+                events = metadata.events + PublishedChangeEvent.create(context, isPublished, effectiveFrom)
             )
         )
     }

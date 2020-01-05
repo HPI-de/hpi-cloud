@@ -12,4 +12,9 @@ data class Metadata(
     val events: List<Event>
 ) {
     inline fun <reified E : Event> eventsOfType(): List<E> = events.filterIsInstance<E>()
+
+    val isDeleted: Boolean
+        get() = isDelayedEventEffective<DeletedChangeEvent>(false) { it.isDeleted }
+    val isPublished: Boolean
+        get() = isDelayedEventEffective<PublishedChangeEvent>(true) { it.isPublished }
 }
