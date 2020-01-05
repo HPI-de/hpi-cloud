@@ -6,7 +6,6 @@ import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.couchbase.openCouchbase
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.grpc.preferredLocales
-import de.hpi.cloud.common.utils.removeFirst
 import io.grpc.*
 
 
@@ -19,7 +18,7 @@ class Service<S : BindableService>(
         const val PORT_DEFAULT = 50051
         const val PORT_VARIABLE = "HPI_CLOUD_PORT"
 
-        private val requestMetadata = mutableListOf<RequestWithMetadata>()
+        private val requestMetadata = mutableSetOf<RequestWithMetadata>()
         fun contextForRequest(request: Any): Context? {
             return requestMetadata.firstOrNull { it.request === request }
                 ?.metadata
@@ -76,12 +75,12 @@ class Service<S : BindableService>(
 
                         override fun onComplete() {
                             super.onComplete()
-                            requestMetadata.removeFirst { it.request === request }
+                            requestMetadata.removeAll { it.request === request }
                         }
 
                         override fun onCancel() {
                             super.onCancel()
-                            requestMetadata.removeFirst { it.request === request }
+                            requestMetadata.removeAll { it.request === request }
                         }
                     }
                 }
