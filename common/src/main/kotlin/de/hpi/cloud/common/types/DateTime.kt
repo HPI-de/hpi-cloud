@@ -6,35 +6,33 @@ import de.hpi.cloud.common.Persistable
 import de.hpi.cloud.common.protobuf.build
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.SerialClassDescImpl
-import java.time.ZoneOffset
-import java.time.LocalDateTime as RawLocalDateTime
+import java.time.Instant as RawInstant
 
-@Serializable(with = LocalDateTime.JsonSerializer::class)
-data class LocalDateTime(val value: RawLocalDateTime) : Persistable<LocalDateTime>() {
+@Serializable(with = Instant.JsonSerializer::class)
+data class Instant(val value: RawInstant) : Persistable<Instant>() {
     companion object {
         const val MILLIS_IN_SECOND = 1_000
         const val NANOS_IN_MILLI = 1_000_000
 
-        fun now(): LocalDateTime = LocalDateTime(RawLocalDateTime.now())
+        fun now(): Instant = Instant(RawInstant.now())
 
-        fun fromMillisNanos(millis: Long, nanos: Int): LocalDateTime = LocalDateTime(
-            value = RawLocalDateTime.ofEpochSecond(
+        fun fromMillisNanos(millis: Long, nanos: Int): Instant = Instant(
+            value = RawInstant.ofEpochSecond(
                 millis / MILLIS_IN_SECOND,
-                (millis % MILLIS_IN_SECOND).toInt() * NANOS_IN_MILLI + nanos,
-                ZoneOffset.UTC
+                (millis % MILLIS_IN_SECOND) * NANOS_IN_MILLI + nanos
             )
         )
 
-        fun fromSecondsNanos(seconds: Long, nanos: Int): LocalDateTime = LocalDateTime(
-            value = RawLocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC)
+        fun fromSecondsNanos(seconds: Long, nanos: Long): Instant = Instant(
+            value = RawInstant.ofEpochSecond(seconds, nanos)
         )
     }
 
-    object ProtoSerializer : Persistable.ProtoSerializer<LocalDateTime, Timestamp> {
-        override fun fromProto(proto: Timestamp, context: Context): LocalDateTime =
-            fromSecondsNanos(proto.seconds, proto.nanos)
+    object ProtoSerializer : Persistable.ProtoSerializer<Instant, Timestamp> {
+        override fun fromProto(proto: Timestamp, context: Context): Instant =
+            fromSecondsNanos(proto.seconds, proto.nanos.toLong())
 
-        override fun toProto(persistable: LocalDateTime, context: Context): Timestamp =
+        override fun toProto(persistable: Instant, context: Context): Timestamp =
             Timestamp.newBuilder().build(persistable) {
                 val (s, n) = it.secondsNanos
                 seconds = s
@@ -42,19 +40,19 @@ data class LocalDateTime(val value: RawLocalDateTime) : Persistable<LocalDateTim
             }
     }
 
-    @Serializer(forClass = LocalDateTime::class)
-    object JsonSerializer : KSerializer<LocalDateTime> {
+    @Serializer(forClass = Instant::class)
+    object JsonSerializer : KSerializer<Instant> {
         const val KEY_MILLIS = "millis"
         const val KEY_NANOS = "nanos"
 
-        override val descriptor = object : SerialClassDescImpl("LocalDateTime") {
+        override val descriptor = object : SerialClassDescImpl("Instant") {
             init {
                 addElement(KEY_MILLIS)
                 addElement(KEY_NANOS)
             }
         }
 
-        override fun serialize(encoder: Encoder, obj: LocalDateTime) {
+        override fun serialize(encoder: Encoder, obj: Instant) {
             val (millis, nanos) = obj.millisNanos
             encoder.beginStructure(descriptor).let {
                 it.encodeLongElement(descriptor, 0, millis)
@@ -63,7 +61,7 @@ data class LocalDateTime(val value: RawLocalDateTime) : Persistable<LocalDateTim
             }
         }
 
-        override fun deserialize(decoder: Decoder): LocalDateTime {
+        override fun deserialize(decoder: Decoder): Instant {
             val dec = decoder.beginStructure(descriptor)
             var millis: Long? = null
             var nanos: Int? = null
@@ -86,13 +84,13 @@ data class LocalDateTime(val value: RawLocalDateTime) : Persistable<LocalDateTim
     }
 
     val secondsNanos: Pair<Long, Int>
-        get() = value.toEpochSecond(ZoneOffset.UTC) to value.nano
+        get() = value.epochSecond to value.nano
     val millisNanos: Pair<Long, Int>
         get() {
-            val millis = value.toEpochSecond(ZoneOffset.UTC) * MILLIS_IN_SECOND + value.nano / NANOS_IN_MILLI
+            val millis = value.epochSecond * MILLIS_IN_SECOND + value.nano / NANOS_IN_MILLI
             val nanos = value.nano % NANOS_IN_MILLI
             return millis to nanos
         }
 }
 
-fun LocalDateTime.toProto(context: Context): Timestamp = LocalDateTime.ProtoSerializer.toProto(this, context)
+fun Instant.toProto(context: Context): Timestamp = Instant.ProtoSerializer.toProto(this, context)

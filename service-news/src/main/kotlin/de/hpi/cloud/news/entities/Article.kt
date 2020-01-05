@@ -16,7 +16,7 @@ data class Article(
     val sourceId: Id<Source>,
     val link: L10n<@Serializable(UriSerializer::class) URI>,
     val title: L10n<String>,
-    val publishDate: LocalDateTime,
+    val publishDate: Instant,
     val authorIds: Set<String> = emptySet(),
     val cover: Image? = null,
     val teaser: L10n<String>,

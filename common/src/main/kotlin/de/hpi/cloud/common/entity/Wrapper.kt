@@ -1,8 +1,10 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package de.hpi.cloud.common.entity
 
 import de.hpi.cloud.common.Context
+import de.hpi.cloud.common.types.Instant
 import de.hpi.cloud.common.types.L10n
-import de.hpi.cloud.common.types.LocalDateTime
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.SerialClassDescImpl
 import java.net.URI
@@ -142,7 +144,7 @@ data class Wrapper<E : Entity<E>>(
     fun withDeleted(
         context: Context,
         isDeleted: Boolean,
-        effectiveFrom: LocalDateTime = LocalDateTime.now()
+        effectiveFrom: Instant = Instant.now()
     ): Wrapper<E> {
         return copy(
             metadata = metadata.copy(
@@ -154,7 +156,7 @@ data class Wrapper<E : Entity<E>>(
     fun withPublished(
         context: Context,
         isPublished: Boolean,
-        effectiveFrom: LocalDateTime = LocalDateTime.now()
+        effectiveFrom: Instant = Instant.now()
     ): Wrapper<E> {
         return copy(
             metadata = metadata.copy(

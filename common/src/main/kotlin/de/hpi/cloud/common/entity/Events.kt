@@ -3,24 +3,24 @@ package de.hpi.cloud.common.entity
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.Party
 import de.hpi.cloud.common.serializers.UriSerializer
+import de.hpi.cloud.common.types.Instant
 import de.hpi.cloud.common.types.L10n
-import de.hpi.cloud.common.types.LocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.net.URI
-import java.time.LocalDateTime as RawLocalDateTime
+import java.time.Instant as RawInstant
 
 @Serializable
 sealed class Event {
     abstract val author: Id<Party>
-    abstract val timestamp: LocalDateTime
+    abstract val timestamp: Instant
 }
 
 @SerialName("create")
 @Serializable
 class CreateEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now()
+    override val timestamp: Instant = Instant.now()
 ) : Event() {
     companion object {
         fun create(context: Context): CreateEvent =
@@ -34,7 +34,7 @@ class CreateEvent private constructor(
 @Serializable
 class UpdateEvent<E : Entity<E>> private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now(),
+    override val timestamp: Instant = Instant.now(),
     val oldValue: E
 ) : Event() {
     companion object {
@@ -50,7 +50,7 @@ class UpdateEvent<E : Entity<E>> private constructor(
 @Serializable
 class KeepAliveEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now()
+    override val timestamp: Instant = Instant.now()
 ) : Event() {
     companion object {
         fun create(context: Context): KeepAliveEvent =
@@ -64,7 +64,7 @@ class KeepAliveEvent private constructor(
 @Serializable
 class SourcesChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now(),
+    override val timestamp: Instant = Instant.now(),
     val oldSources: List<L10n<@Serializable(UriSerializer::class) URI>>
 ) : Event() {
     companion object {
@@ -80,7 +80,7 @@ class SourcesChangeEvent private constructor(
 @Serializable
 class PermissionsChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now(),
+    override val timestamp: Instant = Instant.now(),
     val oldPermissions: Permissions
 ) : Event() {
     companion object {
@@ -95,12 +95,12 @@ class PermissionsChangeEvent private constructor(
 @SerialName("delayed")
 @Serializable
 sealed class DelayedEvent : Event() {
-    abstract val effectiveFrom: LocalDateTime?
+    abstract val effectiveFrom: Instant?
 
     val isEffectiveNow: Boolean
         get() {
             val value = effectiveFrom?.value ?: return true
-            return value < RawLocalDateTime.now()
+            return value < RawInstant.now()
         }
 }
 
@@ -141,15 +141,15 @@ internal inline fun <reified E : DelayedEvent> Metadata.isDelayedEventEffective(
 @Serializable
 class DeletedChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now(),
+    override val timestamp: Instant = Instant.now(),
     val isDeleted: Boolean,
-    override val effectiveFrom: LocalDateTime? = null
+    override val effectiveFrom: Instant? = null
 ) : DelayedEvent() {
     companion object {
         fun create(
             context: Context,
             isDeleted: Boolean,
-            effectiveFrom: LocalDateTime? = null
+            effectiveFrom: Instant? = null
         ): DeletedChangeEvent = DeletedChangeEvent(
             author = context.author,
             isDeleted = isDeleted,
@@ -162,15 +162,15 @@ class DeletedChangeEvent private constructor(
 @Serializable
 class PublishedChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: LocalDateTime = LocalDateTime.now(),
+    override val timestamp: Instant = Instant.now(),
     val isPublished: Boolean,
-    override val effectiveFrom: LocalDateTime? = null
+    override val effectiveFrom: Instant? = null
 ) : DelayedEvent() {
     companion object {
         fun create(
             context: Context,
             isPublished: Boolean,
-            effectiveFrom: LocalDateTime? = null
+            effectiveFrom: Instant? = null
         ): PublishedChangeEvent = PublishedChangeEvent(
             author = context.author,
             isPublished = isPublished,
