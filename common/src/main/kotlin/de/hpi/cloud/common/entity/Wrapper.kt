@@ -27,7 +27,7 @@ data class Wrapper<E : Entity<E>>(
             value: E,
             published: Boolean = true
         ): Wrapper<E> {
-            return Wrapper(
+            var wrapper = Wrapper(
                 type = companion.type,
                 version = companion.version,
                 id = id,
@@ -38,6 +38,8 @@ data class Wrapper<E : Entity<E>>(
                 ),
                 value = value
             )
+            if (published) wrapper = wrapper.withPublished(context, true)
+            return wrapper
         }
 
         inline fun <reified E : Entity<E>> jsonSerializerFor(): JsonSerializer<E> =
