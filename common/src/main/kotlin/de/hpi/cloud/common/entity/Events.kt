@@ -35,27 +35,13 @@ class CreateEvent private constructor(
 class UpdateEvent<E : Entity<E>> private constructor(
     override val author: Id<Party>,
     override val timestamp: Instant = Instant.now(),
-    val oldValue: E
+    val oldValue: E?
 ) : Event() {
     companion object {
-        fun <E : Entity<E>> create(context: Context, wrapper: Wrapper<E>): UpdateEvent<E> =
+        fun <E : Entity<E>> create(context: Context, wrapper: Wrapper<E>, newValue: E): UpdateEvent<E> =
             UpdateEvent(
                 author = context.author,
-                oldValue = wrapper.value
-            )
-    }
-}
-
-@SerialName("keepAlive")
-@Serializable
-class KeepAliveEvent private constructor(
-    override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now()
-) : Event() {
-    companion object {
-        fun create(context: Context): KeepAliveEvent =
-            KeepAliveEvent(
-                author = context.author
+                oldValue = wrapper.value.takeUnless { it == newValue }
             )
     }
 }

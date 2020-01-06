@@ -105,23 +105,12 @@ data class Wrapper<E : Entity<E>>(
         get() = id.documentId(type)
 
     // region Mutation
-    fun withValue(context: Context, newValue: E): Wrapper<E> {
-        return if (value == newValue) withKeepAlive(context)
-        else copy(
-            metadata = metadata.copy(
-                events = metadata.events + UpdateEvent.create(context, this)
-            ),
-            value = newValue
-        )
-    }
-
-    fun withKeepAlive(context: Context): Wrapper<E> {
-        return copy(
-            metadata = metadata.copy(
-                events = metadata.events + KeepAliveEvent.create(context)
-            )
-        )
-    }
+    fun withValue(context: Context, newValue: E): Wrapper<E> = copy(
+        metadata = metadata.copy(
+            events = metadata.events + UpdateEvent.create(context, this, newValue)
+        ),
+        value = newValue
+    )
 
     fun withSources(context: Context, newSources: List<L10n<URI>>): Wrapper<E> {
         return if (metadata.sources == newSources) this
