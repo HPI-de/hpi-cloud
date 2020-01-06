@@ -38,7 +38,7 @@ data class Wrapper<E : Entity<E>>(
                 ),
                 value = value
             )
-            if (published) wrapper = wrapper.withPublished(context, true)
+            if (published) wrapper = wrapper.withPublished(context, isPublished = true)
             return wrapper
         }
 
@@ -147,24 +147,20 @@ data class Wrapper<E : Entity<E>>(
         context: Context,
         isDeleted: Boolean,
         effectiveFrom: Instant = Instant.now()
-    ): Wrapper<E> {
-        return copy(
-            metadata = metadata.copy(
-                events = metadata.events + DeletedChangeEvent.create(context, isDeleted, effectiveFrom)
-            )
+    ): Wrapper<E> = copy(
+        metadata = metadata.copy(
+            events = metadata.events + DeletedChangeEvent.create(context, isDeleted, effectiveFrom)
         )
-    }
+    )
 
     fun withPublished(
         context: Context,
         isPublished: Boolean,
         effectiveFrom: Instant = Instant.now()
-    ): Wrapper<E> {
-        return copy(
-            metadata = metadata.copy(
-                events = metadata.events + PublishedChangeEvent.create(context, isPublished, effectiveFrom)
-            )
+    ): Wrapper<E> = copy(
+        metadata = metadata.copy(
+            events = metadata.events + PublishedChangeEvent.create(context, isPublished, effectiveFrom)
         )
-    }
+    )
     // endregion
 }

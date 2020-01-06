@@ -68,9 +68,7 @@ fun <E : Entity<E>> KClass<E>.entityCompanion(): Entity.Companion<E> {
 
 
 @UseExperimental(ImplicitReflectionSerializer::class)
-fun <E : Entity<E>> KClass<E>.jsonSerializer(): KSerializer<E> {
-    return serializer()
-}
+fun <E : Entity<E>> KClass<E>.jsonSerializer(): KSerializer<E> = serializer()
 
 fun <P : Persistable<P>, Proto : GeneratedMessageV3> KClass<P>.protoSerializer(): Persistable.ProtoSerializer<P, Proto> {
     @Suppress("UNCHECKED_CAST")
@@ -80,11 +78,8 @@ fun <P : Persistable<P>, Proto : GeneratedMessageV3> KClass<P>.protoSerializer()
 }
 
 
-inline fun <reified P : Persistable<P>> GeneratedMessageV3.parse(context: Context): P {
-    return P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
-}
+inline fun <reified P : Persistable<P>> GeneratedMessageV3.parse(context: Context): P =
+    P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
 
-inline fun <reified P : Persistable<P>> GeneratedMessageV3.parseIf(context: Context, hasField: Boolean): P? {
-    return if (!hasField) null
-    else P::class.protoSerializer<P, GeneratedMessageV3>().fromProto(this, context)
-}
+inline fun <reified P : Persistable<P>> GeneratedMessageV3.parseIf(context: Context, hasField: Boolean): P? =
+    if (hasField) parse<P>(context) else null
