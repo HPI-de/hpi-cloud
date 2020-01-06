@@ -3,12 +3,11 @@ package de.hpi.cloud.common.utils
 import java.net.URI
 import java.net.URISyntaxException
 
+fun String.parseUri(): URI = URI(this)
 fun String.tryParseUri(): URI? {
     return try {
-        URI(this)
+        parseUri()
     } catch (e: URISyntaxException) {
         null
     }
 }
-
-fun String.toUri() = URI(this)
