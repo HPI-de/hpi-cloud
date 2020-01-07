@@ -7,5 +7,5 @@ RUN gradle shadowJar
 FROM openjdk:12
 
 WORKDIR /
-COPY --from=builder /home/src/service-club/build/libs/service-club.jar ./
+COPY --from=builder /home/src/service-club/build/libs/service-club-0.0.1-all.jar ./service-club.jar
 CMD java -jar ./service-club.jar
