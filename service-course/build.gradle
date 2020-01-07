@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":service-common"))
+    implementation(project(":common"))
 }
 
 application {

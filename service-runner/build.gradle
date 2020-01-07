@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":service-common"))
+    api(project(":common"))
 
     implementation("io.github.config4k:config4k:0.4.1")
 }
