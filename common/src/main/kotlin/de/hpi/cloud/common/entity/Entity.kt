@@ -4,11 +4,9 @@ import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.Persistable
 import de.hpi.cloud.common.protobuf.setId
-import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
-import java.net.URI
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.companionObjectInstance
@@ -44,7 +42,6 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
     fun createNewWrapper(
         context: Context,
         id: Id<E> = Id.random(),
-        sources: List<L10n<URI>> = emptyList(),
         permissions: Permissions = emptyMap(),
         published: Boolean = true
     ): Wrapper<E> {
@@ -53,7 +50,6 @@ abstract class Entity<E : Entity<E>> : Persistable<E>() {
             context = context,
             companion = companion(),
             id = id,
-            sources = sources,
             permissions = permissions,
             value = this as E,
             published = published

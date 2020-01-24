@@ -4,10 +4,8 @@ package de.hpi.cloud.common.entity
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.types.Instant
-import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.SerialClassDescImpl
-import java.net.URI
 
 @Serializable(with = Wrapper.JsonSerializer::class)
 data class Wrapper<E : Entity<E>>(
@@ -22,7 +20,6 @@ data class Wrapper<E : Entity<E>>(
             context: Context,
             companion: Entity.Companion<E>,
             id: Id<E>,
-            sources: List<L10n<URI>> = emptyList(),
             permissions: Permissions = emptyMap(),
             value: E,
             published: Boolean = true
@@ -32,7 +29,6 @@ data class Wrapper<E : Entity<E>>(
                 version = companion.version,
                 id = id,
                 metadata = Metadata(
-                    sources = sources,
                     permissions = permissions,
                     events = listOf(CreateEvent.create(context))
                 ),
@@ -111,16 +107,6 @@ data class Wrapper<E : Entity<E>>(
         ),
         value = newValue
     )
-
-    fun withSources(context: Context, newSources: List<L10n<URI>>): Wrapper<E> {
-        return if (metadata.sources == newSources) this
-        else copy(
-            metadata = metadata.copy(
-                sources = newSources,
-                events = metadata.events + SourcesChangeEvent.create(context, this)
-            )
-        )
-    }
 
     fun withPermissions(context: Context, newPermissions: Permissions): Wrapper<E> {
         return if (metadata.permissions == newPermissions) this

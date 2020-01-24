@@ -2,12 +2,9 @@ package de.hpi.cloud.common.entity
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.Party
-import de.hpi.cloud.common.serializers.UriSerializer
 import de.hpi.cloud.common.types.Instant
-import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.net.URI
 import java.time.Instant as RawInstant
 
 @Serializable
@@ -46,22 +43,6 @@ class UpdateEvent<E : Entity<E>> private constructor(
     }
 }
 
-@SerialName("sourceChanged")
-@Serializable
-class SourcesChangeEvent private constructor(
-    override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now(),
-    val oldSources: List<L10n<@Serializable(UriSerializer::class) URI>>
-) : Event() {
-    companion object {
-        fun <E : Entity<E>> create(context: Context, wrapper: Wrapper<E>): SourcesChangeEvent =
-            SourcesChangeEvent(
-                author = context.author,
-                oldSources = wrapper.metadata.sources
-            )
-    }
-}
-
 @SerialName("permissionsChange")
 @Serializable
 class PermissionsChangeEvent private constructor(
@@ -85,7 +66,7 @@ sealed class DelayedEvent : Event() {
 
     val isEffectiveNow: Boolean
         get() {
-            val value = effectiveFrom?.value ?: return true
+            val value = effectiveFrom?.rawValue ?: return true
             return value < RawInstant.now()
         }
 }
