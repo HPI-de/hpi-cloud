@@ -7,6 +7,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/hpi-cloud.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/common/hpi-cloud.common.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/hpi-cloud.common.test.iml" filepath="$PROJECT_DIR$/.idea/modules/common/hpi-cloud.common.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/hpi-cloud.main.iml" filepath="$PROJECT_DIR$/.idea/modules/hpi-cloud.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.iml" filepath="$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-club/hpi-cloud.service-club.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.iml" filepath="$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-common/hpi-cloud.service-common.test.iml" />
@@ -37,6 +40,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-news-crawler/hpi-cloud.service-news-crawler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-news-crawler/hpi-cloud.service-news-crawler.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-news/hpi-cloud.service-news.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-news/hpi-cloud.service-news.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-news/hpi-cloud.service-news.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-news/hpi-cloud.service-news.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.iml" filepath="$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.main.iml" filepath="$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.test.iml" filepath="$PROJECT_DIR$/.idea/modules/service-runner/hpi-cloud.service-runner.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/hpi-cloud.test.iml" filepath="$PROJECT_DIR$/.idea/modules/hpi-cloud.test.iml" />
     </modules>
   </component>
