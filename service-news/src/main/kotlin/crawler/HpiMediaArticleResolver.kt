@@ -1,8 +1,13 @@
-package de.hpi.cloud.news.crawler
+package crawler
 
-import de.hpi.cloud.common.utils.protobuf.ImageSize
+import crawler.HpiMediaArchiveCrawler.HpiMediaSource
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.common.types.Image
+import de.hpi.cloud.common.types.Instant
+import de.hpi.cloud.common.types.MarkupContent
+import de.hpi.cloud.common.utils.l10n
 import de.hpi.cloud.common.utils.removeFirst
-import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
+import de.hpi.cloud.news.entities.Article
 import org.jsoup.nodes.Element
 
 class HpiMediaArticleResolver(
@@ -15,15 +20,29 @@ class HpiMediaArticleResolver(
         )
     }
 
-    fun resolvePreview(preview: ArticlePreview): Article {
+    fun resolvePreview(preview: ArticlePreview): Pair<Id<Article>, Article> {
+        fun <T : Any> T?.l10n() = l10n(preview.locale)
+
         val doc = crawler.createDocumentQuery(preview.url).get()
-        val contentElements = doc.selectFirst("div#content")
+        val content = doc.selectFirst("div#content")
             .children()
             .drop(1)
+            .toMutableList()
+
+        val dateAndSourceSection = content.removeFirst {
+            it.hasClass("news102")
+        }
+
+        val contentElements = content
             .flatMap { unboxContent(it) }
             .toMutableList()
 
-        val sourceString = contentElements.removeFirst { it.`is`("h3") }!!.text().trim()
+        val sourceString = dateAndSourceSection?.let { section ->
+            unboxContent(section)
+                .find { it.`is`("h3") }
+                ?.text()?.trim()
+                ?: "News"
+        }
         val source = SOURCE_MAPPING[sourceString] ?: error("Unknown article source")
         if (source != preview.source) error("Mismatching sources detected")
 
@@ -38,18 +57,27 @@ class HpiMediaArticleResolver(
                 val coverAlt = figure.selectFirst("figcaption")?.text()
                     ?: figure.selectFirst("img")?.attr("alt")?.takeIf { it.isNotBlank() }
 
-                Article.ArticleCover(
-                    alt = coverAlt,
-                    sources = mapOf(
-                        ImageSize.ORIGINAL to crawler.baseUri.resolve(coverSrc).toURL()
+                Image(
+                    alt = coverAlt.l10n(),
+                    source = mapOf(
+                        Image.Size.ORIGINAL to crawler.baseUri.resolve(coverSrc).toURL()
                     )
                 )
             }
         } else null
 
         val articleContent = contentElements.joinToString(separator = "\n") { it.toString().trim() }
+        val id = preview.id.truncated()
 
-        return Article(preview, articleContent, cover)
+        return id to Article(
+            sourceId = preview.source.id,
+            link = preview.url.l10n(),
+            title = preview.title.l10n(),
+            publishDate = Instant(preview.publishedAt),
+            cover = cover,
+            teaser = preview.teaser.l10n(),
+            content = MarkupContent.html(articleContent).l10n()
+        )
     }
 
     private fun unboxContent(element: Element): List<Element> {

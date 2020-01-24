@@ -4,17 +4,21 @@ import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.entity.*
 import de.hpi.cloud.common.protobuf.builder
-import de.hpi.cloud.common.serializers.UriSerializer
-import de.hpi.cloud.common.types.*
-import de.hpi.cloud.common.utils.parseUri
+import de.hpi.cloud.common.serializers.json.UrlSerializer
+import de.hpi.cloud.common.serializers.proto.toProto
+import de.hpi.cloud.common.types.Image
+import de.hpi.cloud.common.types.Instant
+import de.hpi.cloud.common.types.L10n
+import de.hpi.cloud.common.types.MarkupContent
+import de.hpi.cloud.common.utils.parseUrl
 import kotlinx.serialization.Serializable
-import java.net.URI
+import java.net.URL
 import de.hpi.cloud.news.v1test.Article as ProtoArticle
 
 @Serializable
 data class Article(
     val sourceId: Id<Source>,
-    val link: L10n<@Serializable(UriSerializer::class) URI>,
+    val link: L10n<@Serializable(UrlSerializer::class) URL>,
     val title: L10n<String>,
     val publishDate: Instant,
     val authorIds: Set<String> = emptySet(),
@@ -30,7 +34,7 @@ data class Article(
     object ProtoSerializer : Entity.ProtoSerializer<Article, ProtoArticle, ProtoArticle.Builder>() {
         override fun fromProto(proto: ProtoArticle, context: Context): Article = Article(
             sourceId = Id(proto.id),
-            link = L10n.single(context, proto.link.parseUri()),
+            link = L10n.single(context, proto.link.parseUrl()),
             title = L10n.single(context, proto.title),
             publishDate = proto.publishDate.parse(context),
             authorIds = proto.authorIdsList.toSet(),
