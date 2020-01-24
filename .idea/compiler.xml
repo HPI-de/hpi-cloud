@@ -5,6 +5,8 @@
       <module name="hpi-cloud.common.main" target="12" />
       <module name="hpi-cloud.common.test" target="12" />
       <module name="hpi-cloud.main" target="12" />
+      <module name="hpi-cloud.service-club.main" target="12" />
+      <module name="hpi-cloud.service-club.test" target="12" />
       <module name="hpi-cloud.service-common.main" target="12" />
       <module name="hpi-cloud.service-common.test" target="12" />
       <module name="hpi-cloud.service-course-crawler.main" target="12" />
@@ -25,6 +27,8 @@
       <module name="hpi-cloud.service-news-crawler.test" target="12" />
       <module name="hpi-cloud.service-news.main" target="12" />
       <module name="hpi-cloud.service-news.test" target="12" />
+      <module name="hpi-cloud.service-runner.main" target="12" />
+      <module name="hpi-cloud.service-runner.test" target="12" />
       <module name="hpi-cloud.test" target="12" />
     </bytecodeTargetLevel>
   </component>

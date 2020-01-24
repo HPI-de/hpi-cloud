@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonConfiguration
 import rx.Observable
 
 val jsonConfiguration = JsonConfiguration.Stable.copy(
-    strictMode = true,
+    strictMode = false,
     allowStructuredMapKeys = false
 )
 val json = Json(jsonConfiguration)
