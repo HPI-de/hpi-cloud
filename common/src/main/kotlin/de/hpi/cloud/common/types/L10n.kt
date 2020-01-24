@@ -32,3 +32,9 @@ data class L10n<T : Any>(
     operator fun get(languageRanges: List<Locale.LanguageRange>): T =
         values.getValue(values.keys.toList().bestMatch(languageRanges))
 }
+
+fun <T : Any> T?.l10n(locale: Locale): L10n<T> =
+    if (this == null) L10n.empty()
+    else L10n.single(locale, this)
+
+fun <T : Any> T?.l10n(context: Context): L10n<T> = l10n(context.languageRanges.locale)

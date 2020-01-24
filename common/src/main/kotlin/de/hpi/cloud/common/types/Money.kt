@@ -1,6 +1,5 @@
 package de.hpi.cloud.common.types
 
-import de.hpi.cloud.common.Persistable
 import de.hpi.cloud.common.serializers.json.CurrencySerializer
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -11,7 +10,7 @@ data class Money(
     val currencyCode: Currency,
     val units: Long,
     val nanos: Int
-) : Persistable<Money>() {
+) {
     companion object {
         const val CURRENCY_EUR = "EUR"
 

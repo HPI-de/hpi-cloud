@@ -1,6 +1,5 @@
 package de.hpi.cloud.common.types
 
-import de.hpi.cloud.common.Persistable
 import de.hpi.cloud.common.serializers.json.EnumSerializer
 import de.hpi.cloud.common.serializers.json.UrlSerializer
 import kotlinx.serialization.Serializable
@@ -11,7 +10,7 @@ data class Image(
     val source: Map<Size, @Serializable(with = UrlSerializer::class) URL>,
     val alt: L10n<String>,
     val aspectRatio: Float? = null
-) : Persistable<Image>() {
+) {
 
     @Serializable(with = Size.Serializer::class)
     enum class Size {

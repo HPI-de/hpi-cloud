@@ -8,7 +8,7 @@ data class Context(
     val languageRanges: List<Locale.LanguageRange>
 ) {
     companion object {
-        fun forService(serviceName: String): Context = Context(
+        fun forInternalService(serviceName: String): Context = Context(
             author = Id(serviceName),
             languageRanges = listOf()
         )

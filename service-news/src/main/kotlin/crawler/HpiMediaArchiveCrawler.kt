@@ -1,6 +1,5 @@
 package crawler
 
-import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.news.entities.Source
 import java.net.URI

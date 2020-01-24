@@ -3,9 +3,8 @@ package crawler
 import crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.types.Image
-import de.hpi.cloud.common.types.Instant
 import de.hpi.cloud.common.types.MarkupContent
-import de.hpi.cloud.common.utils.l10n
+import de.hpi.cloud.common.types.l10n
 import de.hpi.cloud.common.utils.removeFirst
 import de.hpi.cloud.news.entities.Article
 import org.jsoup.nodes.Element
@@ -73,7 +72,7 @@ class HpiMediaArticleResolver(
             sourceId = preview.source.id,
             link = preview.url.l10n(),
             title = preview.title.l10n(),
-            publishDate = Instant(preview.publishedAt),
+            publishDate = preview.publishedAt,
             cover = cover,
             teaser = preview.teaser.l10n(),
             content = MarkupContent.html(articleContent).l10n()

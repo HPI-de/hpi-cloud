@@ -2,7 +2,6 @@ package crawler
 
 import crawler.utils.days
 import de.hpi.cloud.common.Context
-import de.hpi.cloud.common.couchbase.toJsonDocument
 import de.hpi.cloud.common.couchbase.upsert
 import de.hpi.cloud.common.couchbase.withBucket
 import java.time.Instant
@@ -17,14 +16,14 @@ val CRAWLERS = setOf(
     { HpiMediaArchiveCrawler() }
 )
 
-val CRAWLER_CONTEXT = Context.forService("crawler-news")
+val BERLIN_ZONE = ZoneId.of("Europe/Berlin")
+val CRAWLER_CONTEXT = Context.forInternalService("crawler-news")
 
 fun main(args: Array<String>) {
     val updatePeriod = args.firstOrNull()?.toIntOrNull()?.days
     println("Starting $NAME")
     println("Crawling " + (updatePeriod?.let { "the last ${it.days} days" } ?: "everything"))
 
-    val BERLIN_ZONE = ZoneId.of("Europe/Berlin")
     TimeZone.setDefault(TimeZone.getTimeZone(BERLIN_ZONE))
     val now = LocalDate.now()
     fun Instant.isInUpdatePeriod(): Boolean =
@@ -45,15 +44,15 @@ fun main(args: Array<String>) {
             var count = 0
             articles.take(1) // TODO
                 .forEach { (id, article) ->
-                println("Parsed article with ID $id")
-                bucket.upsert(
-                    article.createNewWrapper(
-                        context = CRAWLER_CONTEXT,
-                        id = id
+                    println("Parsed article with ID $id")
+                    bucket.upsert(
+                        article.createNewWrapper(
+                            context = CRAWLER_CONTEXT,
+                            id = id
+                        )
                     )
-                )
-                count++
-            }
+                    count++
+                }
             println("Upserted $count articles")
         }
         println("Crawler used ${crawler.metrics.requestCount} server requests")

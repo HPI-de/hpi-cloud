@@ -3,9 +3,10 @@
 package de.hpi.cloud.common.entity
 
 import de.hpi.cloud.common.Context
-import de.hpi.cloud.common.types.Instant
+import de.hpi.cloud.common.serializers.json.InstantSerializer
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.SerialClassDescImpl
+import java.time.Instant
 
 @Serializable(with = Wrapper.JsonSerializer::class)
 data class Wrapper<E : Entity<E>>(
@@ -121,7 +122,7 @@ data class Wrapper<E : Entity<E>>(
     fun withDeleted(
         context: Context,
         isDeleted: Boolean,
-        effectiveFrom: Instant = Instant.now()
+        effectiveFrom: @Serializable(InstantSerializer::class) Instant = Instant.now()
     ): Wrapper<E> = copy(
         metadata = metadata.copy(
             events = metadata.events + DeletedChangeEvent.create(context, isDeleted, effectiveFrom)
@@ -131,7 +132,7 @@ data class Wrapper<E : Entity<E>>(
     fun withPublished(
         context: Context,
         isPublished: Boolean,
-        effectiveFrom: Instant = Instant.now()
+        effectiveFrom: @Serializable(InstantSerializer::class) Instant = Instant.now()
     ): Wrapper<E> = copy(
         metadata = metadata.copy(
             events = metadata.events + PublishedChangeEvent.create(context, isPublished, effectiveFrom)

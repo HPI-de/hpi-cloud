@@ -11,8 +11,10 @@ class L10nSerializer<T : Any>(
     private val dataSerializer: KSerializer<T>
 ) : KSerializer<L10n<T>> {
     override val descriptor: SerialDescriptor =
-        NamedMapClassDescriptor("L10n",
-            LocaleSerializer.descriptor, JsonElementSerializer.descriptor)
+        NamedMapClassDescriptor(
+            "L10n",
+            LocaleSerializer.descriptor, JsonElementSerializer.descriptor
+        )
 
     override fun serialize(encoder: Encoder, obj: L10n<T>) {
         LinkedHashMapSerializer(LocaleSerializer, dataSerializer).serialize(encoder, obj.values)

@@ -6,7 +6,6 @@ import de.hpi.cloud.news.entities.Article
 import java.net.URL
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
@@ -17,7 +16,8 @@ data class ArticlePreview(
     val title: String,
     val teaser: String,
     val hasCover: Boolean,
-    val locale: Locale
+    val locale: Locale,
+    val zoneId: ZoneId
 ) {
 
     companion object {
@@ -39,7 +39,7 @@ data class ArticlePreview(
         if (!matcher.find()) error("Source not in URL")
         source = SOURCE_MAPPING[matcher.group(1)] ?: error("Unknown source from URL")
 
-        val dateString = SORTABLE_DATE_FORMAT.format(publishedAt.atZone(ZoneId.systemDefault()))
+        val dateString = SORTABLE_DATE_FORMAT.format(publishedAt.atZone(zoneId))
         val titleString = title
             .replace(' ', '-')
             .replace(ID_UNUSABLE_CHARS_REGEX.toRegex(), "")

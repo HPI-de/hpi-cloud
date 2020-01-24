@@ -5,7 +5,7 @@ import de.hpi.cloud.common.entity.Entity
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.protobuf.builder
 import de.hpi.cloud.common.types.L10n
-import de.hpi.cloud.common.utils.l10n
+import de.hpi.cloud.common.types.l10n
 import kotlinx.serialization.Serializable
 import de.hpi.cloud.news.v1test.Tag as ProtoTag
 

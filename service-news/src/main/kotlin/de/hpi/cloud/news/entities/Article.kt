@@ -4,15 +4,16 @@ import com.google.protobuf.UInt32Value
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.entity.*
 import de.hpi.cloud.common.protobuf.builder
+import de.hpi.cloud.common.serializers.json.InstantSerializer
 import de.hpi.cloud.common.serializers.json.UrlSerializer
 import de.hpi.cloud.common.serializers.proto.toProto
 import de.hpi.cloud.common.types.Image
-import de.hpi.cloud.common.types.Instant
 import de.hpi.cloud.common.types.L10n
 import de.hpi.cloud.common.types.MarkupContent
 import de.hpi.cloud.common.utils.parseUrl
 import kotlinx.serialization.Serializable
 import java.net.URL
+import java.time.Instant
 import de.hpi.cloud.news.v1test.Article as ProtoArticle
 
 @Serializable
@@ -20,7 +21,7 @@ data class Article(
     val sourceId: Id<Source>,
     val link: L10n<@Serializable(UrlSerializer::class) URL>,
     val title: L10n<String>,
-    val publishDate: Instant,
+    val publishDate: @Serializable(InstantSerializer::class) Instant,
     val authorIds: Set<String> = emptySet(),
     val cover: Image? = null,
     val teaser: L10n<String>,

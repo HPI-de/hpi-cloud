@@ -2,10 +2,10 @@ package de.hpi.cloud.common.entity
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.Party
-import de.hpi.cloud.common.types.Instant
+import de.hpi.cloud.common.serializers.json.InstantSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Instant as RawInstant
+import java.time.Instant
 
 @Serializable
 sealed class Event {
@@ -17,7 +17,7 @@ sealed class Event {
 @Serializable
 class CreateEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now()
+    override val timestamp: @Serializable(InstantSerializer::class) Instant = Instant.now()
 ) : Event() {
     companion object {
         fun create(context: Context): CreateEvent =
@@ -31,7 +31,7 @@ class CreateEvent private constructor(
 @Serializable
 class UpdateEvent<E : Entity<E>> private constructor(
     override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now(),
+    override val timestamp: @Serializable(InstantSerializer::class) Instant = Instant.now(),
     val oldValue: E?
 ) : Event() {
     companion object {
@@ -47,7 +47,7 @@ class UpdateEvent<E : Entity<E>> private constructor(
 @Serializable
 class PermissionsChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now(),
+    override val timestamp: @Serializable(InstantSerializer::class) Instant = Instant.now(),
     val oldPermissions: Permissions
 ) : Event() {
     companion object {
@@ -62,12 +62,12 @@ class PermissionsChangeEvent private constructor(
 @SerialName("delayed")
 @Serializable
 sealed class DelayedEvent : Event() {
-    abstract val effectiveFrom: Instant?
+    abstract val effectiveFrom: @Serializable(InstantSerializer::class) Instant?
 
     val isEffectiveNow: Boolean
         get() {
-            val value = effectiveFrom?.rawValue ?: return true
-            return value < RawInstant.now()
+            val value = effectiveFrom ?: return true
+            return value < Instant.now()
         }
 }
 
@@ -108,9 +108,9 @@ internal inline fun <reified E : DelayedEvent> Metadata.isDelayedEventEffective(
 @Serializable
 class DeletedChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now(),
+    override val timestamp: @Serializable(InstantSerializer::class) Instant = Instant.now(),
     val isDeleted: Boolean,
-    override val effectiveFrom: Instant? = null
+    override val effectiveFrom: @Serializable(InstantSerializer::class) Instant? = null
 ) : DelayedEvent() {
     companion object {
         fun create(
@@ -129,9 +129,9 @@ class DeletedChangeEvent private constructor(
 @Serializable
 class PublishedChangeEvent private constructor(
     override val author: Id<Party>,
-    override val timestamp: Instant = Instant.now(),
+    override val timestamp: @Serializable(InstantSerializer::class) Instant = Instant.now(),
     val isPublished: Boolean,
-    override val effectiveFrom: Instant? = null
+    override val effectiveFrom: @Serializable(InstantSerializer::class) Instant? = null
 ) : DelayedEvent() {
     companion object {
         fun create(

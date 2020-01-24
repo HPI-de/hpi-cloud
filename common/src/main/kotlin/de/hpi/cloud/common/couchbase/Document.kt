@@ -29,7 +29,7 @@ inline fun <reified E : Entity<E>> AsyncBucket.get(id: Id<E>): Observable<Wrappe
         .map { it.parseWrapper<E>() }
 }
 
-inline fun <reified E : Entity<E>> Wrapper<E>.toJsonDocument() : RawJsonDocument {
+inline fun <reified E : Entity<E>> Wrapper<E>.toJsonDocument(): RawJsonDocument {
     return RawJsonDocument.create(
         documentId,
         json.stringify(Wrapper.jsonSerializerFor(), this)

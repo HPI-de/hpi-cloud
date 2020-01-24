@@ -1,6 +1,5 @@
 package de.hpi.cloud.common.types
 
-import de.hpi.cloud.common.Persistable
 import de.hpi.cloud.common.serializers.json.EnumSerializer
 import kotlinx.serialization.Serializable
 
@@ -8,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class MarkupContent(
     val type: Type,
     val content: String
-) : Persistable<MarkupContent>() {
+) {
     companion object {
         fun plain(content: String): MarkupContent = MarkupContent(Type.PLAIN, content)
         fun html(content: String): MarkupContent = MarkupContent(Type.HTML, content)
