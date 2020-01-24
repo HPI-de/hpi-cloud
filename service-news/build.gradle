@@ -7,8 +7,12 @@ apply plugin: 'kotlinx-serialization'
 
 dependencies {
     implementation(project(":common"))
+
+    // Crawling
+    implementation("org.jsoup:jsoup:1.12.1")
 }
 
 application {
     mainClassName = "de.hpi.cloud.news.NewsServiceKt"
+//    mainClassName = "crawler.MainKt"
 }

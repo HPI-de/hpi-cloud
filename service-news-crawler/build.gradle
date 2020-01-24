@@ -12,5 +12,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "de.hpi.cloud.news.crawler.MainKt"
+    mainClassName = "crawler.MainKt"
 }
