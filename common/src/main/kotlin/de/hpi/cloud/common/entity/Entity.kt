@@ -9,7 +9,7 @@ import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.companionObjectInstance
-import de.hpi.cloud.common.serializers.ProtoSerializer as AnyProtoSerializer
+import de.hpi.cloud.common.serializers.proto.ProtoSerializer as AnyProtoSerializer
 
 abstract class Entity<E : Entity<E>> {
     abstract class Companion<E : Entity<E>>(

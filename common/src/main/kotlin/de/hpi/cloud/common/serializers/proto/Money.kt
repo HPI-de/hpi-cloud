@@ -2,7 +2,6 @@ package de.hpi.cloud.common.serializers.proto
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.protobuf.build
-import de.hpi.cloud.common.serializers.ProtoSerializer
 import de.hpi.cloud.common.types.Money
 import java.util.*
 import com.google.type.Money as ProtoMoney

@@ -2,10 +2,8 @@ package de.hpi.cloud.common.serializers.proto
 
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.protobuf.build
-import de.hpi.cloud.common.serializers.ProtoSerializer
 import de.hpi.cloud.common.types.Image
 import de.hpi.cloud.common.types.L10n
-import de.hpi.cloud.common.utils.bestMatch
 import de.hpi.cloud.common.utils.parseUrl
 import de.hpi.cloud.common.v1test.Image as ProtoImage
 

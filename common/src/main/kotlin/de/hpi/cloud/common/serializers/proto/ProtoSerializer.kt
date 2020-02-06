@@ -1,4 +1,4 @@
-package de.hpi.cloud.common.serializers
+package de.hpi.cloud.common.serializers.proto
 
 import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Context
