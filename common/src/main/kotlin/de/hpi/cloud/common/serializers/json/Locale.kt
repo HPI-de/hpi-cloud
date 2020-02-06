@@ -1,4 +1,4 @@
-package de.hpi.cloud.common.serializers
+package de.hpi.cloud.common.serializers.json
 
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.StringDescriptor

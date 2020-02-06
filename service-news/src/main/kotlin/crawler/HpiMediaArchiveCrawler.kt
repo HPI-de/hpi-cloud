@@ -1,13 +1,17 @@
-package de.hpi.cloud.news.crawler
+package crawler
 
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.news.entities.Source
 import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
 
 class HpiMediaArchiveCrawler : ArticleCrawler() {
-    enum class HpiMediaSource(val id: String) {
+    enum class HpiMediaSource(val id: Id<Source>) {
         NEWS("hpi-news"),
-        PRESS("hpi-press")
+        PRESS("hpi-press");
+
+        constructor(id: String) : this(Id(id))
     }
 
     companion object {

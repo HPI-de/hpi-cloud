@@ -1,10 +1,13 @@
-package de.hpi.cloud.news.crawler
+package crawler
 
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.news.entities.Article
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.net.URL
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class HpiMediaArchive(
     val crawler: ArticleCrawler,
@@ -27,7 +30,7 @@ class HpiMediaArchive(
         var currentPreviews = queryArchive(page, limit)
             .drop(offsetInPage)
             .map { extractArticlePreview(it) }
-        var lastId: String
+        var lastId: Id<Article>
         do {
             yieldAll(currentPreviews)
             lastId = currentPreviews.last().id
@@ -54,10 +57,12 @@ class HpiMediaArchive(
 
         val dateString = element.selectFirst("p.date")!!.text().trim()
         val publishedAt = LocalDate.parse(dateString, GERMAN_DATE_FORMAT).atStartOfDay()
+            .atZone(BERLIN_ZONE)
+            .toInstant()
 
         val title = element.selectFirst("h1")!!.text().trim()
         val teaser = element.selectFirst("p:not(.date)")!!.ownText().trim()
 
-        return ArticlePreview(url, publishedAt, title, teaser, hasCover, "de")
+        return ArticlePreview(url, publishedAt, title, teaser, hasCover, Locale.GERMAN, BERLIN_ZONE)
     }
 }

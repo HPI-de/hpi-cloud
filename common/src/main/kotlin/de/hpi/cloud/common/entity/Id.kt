@@ -8,8 +8,17 @@ import java.util.*
 @Serializable(with = Id.JsonSerializer::class)
 data class Id<E : Entity<E>>(val value: String) {
     companion object {
-        fun <E : Entity<E>> random(): Id<E> = Id(UUID.randomUUID().toString())
+        private const val ID_MAX_LENGTH = 64
+
+        fun <E : Entity<E>> random(): Id<E> =
+            Id(UUID.randomUUID().toString())
+
+        fun <E : Entity<E>> fromParts(vararg parts: String): Id<E> =
+            Id(parts.joinToString(separator = "_"))
     }
+
+    fun truncated(maxLength: Int = ID_MAX_LENGTH): Id<E> =
+        copy(value = value.take(maxLength))
 
     @Serializer(forClass = Id::class)
     class JsonSerializer<E : Entity<E>>(

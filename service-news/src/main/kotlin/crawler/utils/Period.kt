@@ -1,4 +1,4 @@
-package de.hpi.cloud.news.crawler.utils
+package crawler.utils
 
 import java.time.Period
 

@@ -6,4 +6,11 @@ import java.util.*
 data class Context(
     val author: Id<Party>,
     val languageRanges: List<Locale.LanguageRange>
-)
+) {
+    companion object {
+        fun forInternalService(serviceName: String): Context = Context(
+            author = Id(serviceName),
+            languageRanges = listOf()
+        )
+    }
+}

@@ -1,5 +1,7 @@
-package de.hpi.cloud.news.crawler
+package crawler
 
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.news.entities.Article
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.net.URI
@@ -26,5 +28,5 @@ abstract class ArticleCrawler {
             .userAgent(userAgent)
     }
 
-    abstract fun query(indexOffset: Int = 0): Sequence<Article>
+    abstract fun query(indexOffset: Int = 0): Sequence<Pair<Id<Article>, Article>>
 }
