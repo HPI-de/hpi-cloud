@@ -1,5 +1,10 @@
 package de.hpi.cloud.common.entity
 
+import com.couchbase.client.java.Bucket
+import com.google.common.base.CharMatcher
+import com.google.protobuf.GeneratedMessageV3
+import de.hpi.cloud.common.grpc.throwAlreadyExists
+import de.hpi.cloud.common.grpc.throwInvalidArgument
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.StringDescriptor
 import java.util.*
@@ -8,16 +13,42 @@ import java.util.*
 @Serializable(with = Id.JsonSerializer::class)
 data class Id<E : Entity<E>>(val value: String) {
     companion object {
-        private const val ID_MAX_LENGTH = 64
+        const val LENGTH_MIN = 4
+        const val LENGTH_MAX = 64
+        val PATTERN = "[a-z0-9\\-_:.]+".toRegex(RegexOption.IGNORE_CASE)
 
         fun <E : Entity<E>> random(): Id<E> =
             Id(UUID.randomUUID().toString())
 
         fun <E : Entity<E>> fromParts(vararg parts: String): Id<E> =
             Id(parts.joinToString(separator = "_"))
+
+        inline fun <reified E : Entity<E>, reified Proto : GeneratedMessageV3> fromClientSupplied(
+            requestedValue: String,
+            bucket: Bucket
+        ): Id<E> {
+            return when {
+                requestedValue.isEmpty() -> random()
+
+                !CharMatcher.ascii().matchesAllOf(requestedValue) ->
+                    throwInvalidArgument("id must only contain ASCII characters", requestedValue)
+                requestedValue.length < LENGTH_MIN ->
+                    throwInvalidArgument("id must be at least $LENGTH_MIN characters long", requestedValue)
+                requestedValue.length > LENGTH_MAX ->
+                    throwInvalidArgument("id must be at most $LENGTH_MAX characters long", requestedValue)
+                !PATTERN.matches(requestedValue) ->
+                    throwInvalidArgument(
+                        "id must match the case-insensitive regex \"${PATTERN.pattern}\"",
+                        requestedValue
+                    )
+
+                bucket.exists(requestedValue) -> throwAlreadyExists<Proto>(Id<E>(requestedValue))
+                else -> Id(requestedValue)
+            }
+        }
     }
 
-    fun truncated(maxLength: Int = ID_MAX_LENGTH): Id<E> =
+    fun truncated(maxLength: Int = LENGTH_MAX): Id<E> =
         copy(value = value.take(maxLength))
 
     @Serializer(forClass = Id::class)

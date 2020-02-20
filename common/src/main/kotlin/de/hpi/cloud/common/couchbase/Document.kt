@@ -3,9 +3,12 @@ package de.hpi.cloud.common.couchbase
 import com.couchbase.client.java.AsyncBucket
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.document.RawJsonDocument
+import com.couchbase.client.java.error.DocumentAlreadyExistsException
+import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.entity.Entity
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.entity.Wrapper
+import de.hpi.cloud.common.grpc.throwAlreadyExists
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import rx.Observable
@@ -34,6 +37,14 @@ inline fun <reified E : Entity<E>> Wrapper<E>.toJsonDocument(): RawJsonDocument 
         documentId,
         json.stringify(Wrapper.jsonSerializerFor(), this)
     )
+}
+
+inline fun <reified E : Entity<E>, reified Proto : GeneratedMessageV3> Bucket.tryInsertOrFail(wrapper: Wrapper<E>) {
+    try {
+        insert(wrapper.toJsonDocument())
+    } catch (e: DocumentAlreadyExistsException) {
+        throwAlreadyExists<Proto>(wrapper.id)
+    }
 }
 
 inline fun <reified E : Entity<E>> Bucket.upsert(entityWrapper: Wrapper<E>) {

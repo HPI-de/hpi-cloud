@@ -4,10 +4,6 @@ import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.entity.Id
 import io.grpc.Status
 
-fun checkArgNotSet(arg: String?, argName: String) {
-    if (!arg.isNullOrBlank()) throwInvalidArgument("Argument $argName must not be set", arg)
-}
-
 fun checkArgRequired(hasArg: Boolean, argName: String, ifArgSet: String? = null) {
     if (!hasArg) argRequired(argName, ifArgSet)
 }

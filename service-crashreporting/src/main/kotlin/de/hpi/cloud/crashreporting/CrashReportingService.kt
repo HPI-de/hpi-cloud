@@ -2,17 +2,17 @@ package de.hpi.cloud.crashreporting
 
 import com.couchbase.client.java.Bucket
 import de.hpi.cloud.common.Service
-import de.hpi.cloud.common.utils.couchbase.buildJsonDocument
-import de.hpi.cloud.common.utils.grpc.checkArgNotSet
-import de.hpi.cloud.common.utils.grpc.checkArgRequired
-import de.hpi.cloud.common.utils.grpc.unary
-import de.hpi.cloud.common.utils.protobuf.toDbMap
-import de.hpi.cloud.common.utils.thenWith
-import de.hpi.cloud.crashreporting.v1test.CrashReport
+import de.hpi.cloud.common.couchbase.tryInsertOrFail
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.common.entity.parse
+import de.hpi.cloud.common.grpc.checkArgRequired
+import de.hpi.cloud.common.grpc.unary
+import de.hpi.cloud.crashreporting.entities.CrashReport
+import de.hpi.cloud.crashreporting.entities.toProto
 import de.hpi.cloud.crashreporting.v1test.CrashReportingServiceGrpc
 import de.hpi.cloud.crashreporting.v1test.CreateCrashReportRequest
 import io.grpc.stub.StreamObserver
-import java.util.*
+import de.hpi.cloud.crashreporting.v1test.CrashReport as ProtoCrashReport
 
 fun main(args: Array<String>) {
     val service = Service("crashreporting", args.firstOrNull()?.toInt()) { CrashReportingServiceImpl(it) }
@@ -21,16 +21,11 @@ fun main(args: Array<String>) {
 
 class CrashReportingServiceImpl(private val bucket: Bucket) :
     CrashReportingServiceGrpc.CrashReportingServiceImplBase() {
-    companion object {
-        const val TYPE_CRASH_REPORT = "crashReport"
-    }
-
     override fun createCrashReport(
         request: CreateCrashReportRequest?,
-        responseObserver: StreamObserver<CrashReport>?
+        responseObserver: StreamObserver<ProtoCrashReport>?
     ) = unary(request, responseObserver, "createCrashReport") { req ->
         checkArgRequired(req.hasCrashReport(), "crash_report")
-        checkArgNotSet(req.crashReport.id, "crash_report.id")
         checkArgRequired(req.crashReport.appName, "crash_report.app_name")
         checkArgRequired(req.crashReport.appVersion, "crash_report.app_version")
         checkArgRequired(req.crashReport.appVersionCode != 0, "crash_report.app_version_code")
@@ -62,36 +57,14 @@ class CrashReportingServiceImpl(private val bucket: Bucket) :
         checkArgRequired(req.crashReport.exception, "crash_report.exception")
         checkArgRequired(req.crashReport.stackTrace, "crash_report.stack_trace")
 
-        val id = UUID.randomUUID().toString()
+        val id = Id.fromClientSupplied<CrashReport, ProtoCrashReport>(req.crashReport.id, bucket)
 
-        bucket.insert(
-            buildJsonDocument(
-                id, TYPE_CRASH_REPORT, 1, mapOf(
-                    "appName" to req.crashReport.appName,
-                    "appVersion" to req.crashReport.appVersion,
-                    "appVersionCode" to req.crashReport.appVersionCode,
-                    "device" to req.crashReport.hasDevice().thenWith(req.crashReport.device) {
-                        mapOf(
-                            "brand" to it.brand,
-                            "model" to it.model
-                        )
-                    },
-                    "operatingSystem" to req.crashReport.hasOperatingSystem().thenWith(req.crashReport.operatingSystem) {
-                        mapOf(
-                            "os" to it.os,
-                            "version" to it.version
-                        )
-                    },
-                    "timestamp" to req.crashReport.timestamp.toDbMap(),
-                    "exception" to req.crashReport.exception,
-                    "stackTrace" to req.crashReport.stackTrace,
-                    "log" to req.crashReport.log
-                )
-            )
-        )
-        CrashReport.newBuilder(req.crashReport)
-            .setId(id)
-            .build()
+        val crashReport = req.crashReport.parse<CrashReport>(this)
+        val wrapper = crashReport.createNewWrapper(this, id)
+
+        bucket.tryInsertOrFail<CrashReport, ProtoCrashReport>(wrapper)
+
+        wrapper.toProto(this)
     }
     // endregion
 }
