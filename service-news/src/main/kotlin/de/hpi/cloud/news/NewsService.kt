@@ -8,7 +8,7 @@ import de.hpi.cloud.common.couchbase.get
 import de.hpi.cloud.common.couchbase.paginate
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.grpc.checkArgRequired
-import de.hpi.cloud.common.grpc.notFound
+import de.hpi.cloud.common.grpc.throwNotFound
 import de.hpi.cloud.common.grpc.unary
 import de.hpi.cloud.common.protobuf.build
 import de.hpi.cloud.news.entities.*
@@ -54,7 +54,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
             checkArgRequired(req.id, "id")
 
             bucket.get<Article>(Id(req.id))?.toProto(this)
-                ?: notFound<ProtoArticle>(req.id)
+                ?: throwNotFound<ProtoArticle>(req.id)
         }
     // endregion
 
@@ -75,7 +75,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
             checkArgRequired(req.id, "id")
 
             bucket.get<Source>(Id(req.id))?.toProto(this)
-                ?: notFound<ProtoSource>(req.id)
+                ?: throwNotFound<ProtoSource>(req.id)
         }
     // endregion
 
@@ -98,7 +98,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
             checkArgRequired(req.id, "id")
 
             bucket.get<Category>(Id(req.id))?.toProto(this)
-                ?: notFound<ProtoCategory>(req.id)
+                ?: throwNotFound<ProtoCategory>(req.id)
         }
     // endregion
 
@@ -119,7 +119,7 @@ class NewsServiceImpl(private val bucket: Bucket) : NewsServiceGrpc.NewsServiceI
             checkArgRequired(req.id, "id")
 
             bucket.get<Tag>(Id(req.id))?.toProto(this)
-                ?: notFound<ProtoTag>(req.id)
+                ?: throwNotFound<ProtoTag>(req.id)
         }
     // endregion
 }

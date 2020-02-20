@@ -1,10 +1,11 @@
 package de.hpi.cloud.common.grpc
 
 import com.google.protobuf.GeneratedMessageV3
+import de.hpi.cloud.common.entity.Id
 import io.grpc.Status
 
 fun checkArgNotSet(arg: String?, argName: String) {
-    if (!arg.isNullOrBlank()) Status.INVALID_ARGUMENT.throwException("Argument $argName must not be set")
+    if (!arg.isNullOrBlank()) throwInvalidArgument("Argument $argName must not be set", arg)
 }
 
 fun checkArgRequired(hasArg: Boolean, argName: String, ifArgSet: String? = null) {
@@ -20,8 +21,16 @@ fun argRequired(argName: String, ifArgSet: String? = null) {
             + (ifArgSet?.let { " if argument $it is set" } ?: ""))
 }
 
-inline fun <reified M : GeneratedMessageV3> notFound(id: String): Nothing {
-    Status.NOT_FOUND.throwException("${M::class.java.simpleName} with ID $id not found")
+fun throwInvalidArgument(message: String, value: String): Nothing =
+    Status.INVALID_ARGUMENT.throwException("$message, was: \"$value\"")
+
+
+inline fun <reified Proto : GeneratedMessageV3> throwAlreadyExists(id: Id<*>): Nothing =
+    Status.ALREADY_EXISTS.throwException("${Proto::class.java.simpleName} with ID $id already exists")
+
+
+inline fun <reified Proto : GeneratedMessageV3> throwNotFound(id: String): Nothing {
+    Status.NOT_FOUND.throwException("${Proto::class.java.simpleName} with ID $id not found")
 }
 
 fun Status.throwException(description: String? = null, cause: Throwable? = null): Nothing {
