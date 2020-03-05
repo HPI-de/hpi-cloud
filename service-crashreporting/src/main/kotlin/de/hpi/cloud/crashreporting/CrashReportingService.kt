@@ -2,7 +2,7 @@ package de.hpi.cloud.crashreporting
 
 import com.couchbase.client.java.Bucket
 import de.hpi.cloud.common.Service
-import de.hpi.cloud.common.couchbase.tryInsertOrFail
+import de.hpi.cloud.common.couchbase.tryInsert
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.entity.parse
 import de.hpi.cloud.common.grpc.checkArgRequired
@@ -62,7 +62,7 @@ class CrashReportingServiceImpl(private val bucket: Bucket) :
         val crashReport = req.crashReport.parse<CrashReport>(this)
         val wrapper = crashReport.createNewWrapper(this, id)
 
-        bucket.tryInsertOrFail<CrashReport, ProtoCrashReport>(wrapper)
+        bucket.tryInsert<CrashReport, ProtoCrashReport>(wrapper)
 
         wrapper.toProto(this)
     }
