@@ -122,7 +122,7 @@ data class Wrapper<E : Entity<E>>(
     fun withDeleted(
         context: Context,
         isDeleted: Boolean,
-        effectiveFrom: @Serializable(InstantSerializer::class) Instant = Instant.now()
+        effectiveFrom: @Serializable(InstantSerializer::class) Instant? = null
     ): Wrapper<E> = copy(
         metadata = metadata.copy(
             events = metadata.events + DeletedChangeEvent.create(context, isDeleted, effectiveFrom)
@@ -132,7 +132,7 @@ data class Wrapper<E : Entity<E>>(
     fun withPublished(
         context: Context,
         isPublished: Boolean,
-        effectiveFrom: @Serializable(InstantSerializer::class) Instant = Instant.now()
+        effectiveFrom: @Serializable(InstantSerializer::class) Instant? = null
     ): Wrapper<E> = copy(
         metadata = metadata.copy(
             events = metadata.events + PublishedChangeEvent.create(context, isPublished, effectiveFrom)

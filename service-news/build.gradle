@@ -12,6 +12,12 @@ dependencies {
     implementation("org.jsoup:jsoup:1.12.1")
 }
 
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-experimental=kotlin.Experimental"
+    }
+}
+
 application {
     mainClassName = "de.hpi.cloud.news.NewsServiceKt"
 //    mainClassName = "crawler.MainKt"

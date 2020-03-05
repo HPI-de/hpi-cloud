@@ -14,7 +14,7 @@ import de.hpi.cloud.common.couchbase.get
 import de.hpi.cloud.common.couchbase.paginate
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.grpc.checkArgRequired
-import de.hpi.cloud.common.grpc.notFound
+import de.hpi.cloud.common.grpc.throwNotFound
 import de.hpi.cloud.common.grpc.unary
 import de.hpi.cloud.common.protobuf.build
 import io.grpc.stub.StreamObserver
@@ -43,7 +43,7 @@ class ClubServiceImpl(private val bucket: Bucket) : ClubServiceGrpc.ClubServiceI
             checkArgRequired(req.id, "id")
 
             bucket.get<Club>(Id(req.id))?.toProto(this)
-                ?: notFound<ProtoClub>(req.id)
+                ?: throwNotFound<ProtoClub>(req.id)
         }
     // endregion
 }
