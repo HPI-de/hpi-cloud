@@ -30,8 +30,6 @@ data class Id<E : Entity<E>>(val value: String) {
             return when {
                 requestedValue.isEmpty() -> random()
 
-                !CharMatcher.ascii().matchesAllOf(requestedValue) ->
-                    throwInvalidArgument("id must only contain ASCII characters", requestedValue)
                 requestedValue.length < LENGTH_MIN ->
                     throwInvalidArgument("id must be at least $LENGTH_MIN characters long", requestedValue)
                 requestedValue.length > LENGTH_MAX ->
