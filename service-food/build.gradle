@@ -14,10 +14,20 @@ plugins {
     id "com.github.johnrengelman.shadow" version "5.1.0"
 }
 
+repositories {
+    jcenter()
+    maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
+}
+
 dependencies {
     implementation(project(":common"))
+    
+    // Crawling
+    implementation("com.beust:klaxon:5.0.11")
 }
 
 application {
+    // mainClassName = "de.hpi.cloud.food.crawler.MainKt"
+    
     mainClassName = "de.hpi.cloud.food.FoodServiceKt"
 }
