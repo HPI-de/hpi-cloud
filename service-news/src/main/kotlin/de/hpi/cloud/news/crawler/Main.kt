@@ -1,6 +1,6 @@
-package crawler
+package de.hpi.cloud.news.crawler
 
-import crawler.utils.days
+import de.hpi.cloud.news.crawler.utils.days
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.couchbase.upsert
 import de.hpi.cloud.common.couchbase.withBucket
