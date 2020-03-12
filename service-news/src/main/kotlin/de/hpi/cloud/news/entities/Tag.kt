@@ -30,4 +30,8 @@ data class Tag(
     }
 }
 
-fun Wrapper<Tag>.toProto(context: Context): ProtoTag = Tag.ProtoSerializer.toProto(this, context)
+fun ProtoTag.parse(context: Context): Tag =
+    Tag.ProtoSerializer.fromProto(this, context)
+
+fun Wrapper<Tag>.toProto(context: Context): ProtoTag =
+    Tag.ProtoSerializer.toProto(this, context)

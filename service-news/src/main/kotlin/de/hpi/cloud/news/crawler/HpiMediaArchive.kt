@@ -56,13 +56,22 @@ class HpiMediaArchive(
         val hasCover = articleLinkWithCover.selectFirst("img").attr("src") != NO_COVER_SOURCE
 
         val dateString = element.selectFirst("p.date")!!.text().trim()
-        val publishedAt = LocalDate.parse(dateString, GERMAN_DATE_FORMAT).atStartOfDay()
+        val publishedAt = LocalDate.parse(dateString, GERMAN_DATE_FORMAT)
+            .atStartOfDay()
             .atZone(BERLIN_ZONE)
             .toInstant()
 
         val title = element.selectFirst("h1")!!.text().trim()
         val teaser = element.selectFirst("p:not(.date)")!!.ownText().trim()
 
-        return ArticlePreview(url, publishedAt, title, teaser, hasCover, Locale.GERMAN, BERLIN_ZONE)
+        return ArticlePreview(
+            url,
+            publishedAt,
+            title,
+            teaser,
+            hasCover,
+            Locale.GERMAN,
+            BERLIN_ZONE
+        )
     }
 }
