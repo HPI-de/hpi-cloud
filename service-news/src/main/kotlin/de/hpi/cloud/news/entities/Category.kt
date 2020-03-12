@@ -16,11 +16,11 @@ data class Category(
     companion object : Entity.Companion<Category>("category")
 
     object ProtoSerializer : Entity.ProtoSerializer<Category, ProtoCategory, ProtoCategory.Builder>() {
-        override fun fromProto(proto: ProtoCategory, context: Context): Category = Category(
+        override fun fromProto(proto: ProtoCategory, context: Context) = Category(
             title = proto.title.l10n(context)
         )
 
-        override fun toProtoBuilder(entity: Category, context: Context): ProtoCategory.Builder =
+        override fun toProtoBuilder(entity: Category, context: Context) =
             ProtoCategory.newBuilder().builder(entity) {
                 title = it.title[context]
             }

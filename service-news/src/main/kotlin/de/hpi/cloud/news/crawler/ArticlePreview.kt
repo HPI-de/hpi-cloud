@@ -1,7 +1,7 @@
 package de.hpi.cloud.news.crawler
 
-import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import de.hpi.cloud.news.entities.Article
 import java.net.URL
 import java.time.Instant

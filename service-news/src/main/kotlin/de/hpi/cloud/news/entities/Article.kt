@@ -36,22 +36,21 @@ data class Article(
     companion object : Entity.Companion<Article>("article")
 
     object ProtoSerializer : Entity.ProtoSerializer<Article, ProtoArticle, ProtoArticle.Builder>() {
-        override fun fromProto(proto: ProtoArticle, context: Context): Article =
-            Article(
-                sourceId = Id(proto.id),
-                link = L10n.single(context, proto.link.parseUrl()),
-                title = L10n.single(context, proto.title),
-                publishDate = proto.publishDate.parse(context),
-                authorIds = proto.authorIdsList.toSet(),
-                cover = if (proto.hasCover()) proto.cover.parse(context) else null,
-                teaser = L10n.single(context, proto.teaser),
-                content = L10n.single(context, proto.content.parse(context)),
-                categories = proto.categoryIdsList.map { Id<Category>(it) }.toSet(),
-                tags = proto.tagIdsList.map { Id<Tag>(it) }.toSet(),
-                viewCount = proto.viewCount.value.takeIf { proto.hasViewCount() }
-            )
+        override fun fromProto(proto: ProtoArticle, context: Context) = Article(
+            sourceId = Id(proto.id),
+            link = L10n.single(context, proto.link.parseUrl()),
+            title = L10n.single(context, proto.title),
+            publishDate = proto.publishDate.parse(context),
+            authorIds = proto.authorIdsList.toSet(),
+            cover = if (proto.hasCover()) proto.cover.parse(context) else null,
+            teaser = L10n.single(context, proto.teaser),
+            content = L10n.single(context, proto.content.parse(context)),
+            categories = proto.categoryIdsList.map { Id<Category>(it) }.toSet(),
+            tags = proto.tagIdsList.map { Id<Tag>(it) }.toSet(),
+            viewCount = proto.viewCount.value.takeIf { proto.hasViewCount() }
+        )
 
-        override fun toProtoBuilder(entity: Article, context: Context): ProtoArticle.Builder =
+        override fun toProtoBuilder(entity: Article, context: Context) =
             ProtoArticle.newBuilder().builder(entity) {
                 sourceId = it.sourceId.value
                 link = it.link[context].toString()

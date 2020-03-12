@@ -17,12 +17,12 @@ data class Tag(
     companion object : Entity.Companion<Tag>("tag")
 
     object ProtoSerializer : Entity.ProtoSerializer<Tag, ProtoTag, ProtoTag.Builder>() {
-        override fun fromProto(proto: ProtoTag, context: Context): Tag = Tag(
+        override fun fromProto(proto: ProtoTag, context: Context) = Tag(
             title = proto.title.l10n(context),
             articleCount = proto.articleCount
         )
 
-        override fun toProtoBuilder(entity: Tag, context: Context): ProtoTag.Builder =
+        override fun toProtoBuilder(entity: Tag, context: Context) =
             ProtoTag.newBuilder().builder(entity) {
                 title = it.title[context]
                 articleCount = it.articleCount

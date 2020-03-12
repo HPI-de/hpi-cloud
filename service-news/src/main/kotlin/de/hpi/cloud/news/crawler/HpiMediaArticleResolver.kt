@@ -1,11 +1,11 @@
 package de.hpi.cloud.news.crawler
 
-import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.types.Image
 import de.hpi.cloud.common.types.MarkupContent
 import de.hpi.cloud.common.types.l10n
 import de.hpi.cloud.common.utils.removeFirst
+import de.hpi.cloud.news.crawler.HpiMediaArchiveCrawler.HpiMediaSource
 import de.hpi.cloud.news.entities.Article
 import org.jsoup.nodes.Element
 
