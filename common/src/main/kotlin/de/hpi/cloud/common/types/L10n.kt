@@ -31,6 +31,7 @@ data class L10n<T : Any>(
     operator fun get(context: Context): T = get(context.languageRanges)
     operator fun get(languageRanges: List<Locale.LanguageRange>): T =
         values.getValue(values.keys.toList().bestMatch(languageRanges))
+    operator fun get(locale: Locale): T? = values[locale]
 }
 
 fun <T : Any> T?.l10n(locale: Locale): L10n<T> =
