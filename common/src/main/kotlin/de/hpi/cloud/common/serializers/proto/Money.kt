@@ -23,5 +23,8 @@ object MoneySerializer : ProtoSerializer<Money, ProtoMoney> {
         }
 }
 
+fun ProtoMoney.parse(context: Context): Money =
+    MoneySerializer.fromProto(this, context)
+
 fun Money.toProto(context: Context): ProtoMoney =
     MoneySerializer.toProto(this, context)

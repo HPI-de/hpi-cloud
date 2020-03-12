@@ -5,8 +5,7 @@ import de.hpi.cloud.common.protobuf.build
 import java.time.Instant
 import com.google.protobuf.Timestamp as ProtoInstant
 
-object InstantSerializer :
-    ProtoSerializer<Instant, ProtoInstant> {
+object InstantSerializer : ProtoSerializer<Instant, ProtoInstant> {
     override fun fromProto(proto: ProtoInstant, context: Context): Instant =
         Instant.ofEpochSecond(proto.seconds, proto.nanos.toLong())
 
@@ -16,6 +15,9 @@ object InstantSerializer :
             nanos = it.nano
         }
 }
+
+fun ProtoInstant.parse(context: Context): Instant =
+    InstantSerializer.fromProto(this, context)
 
 fun Instant.toProto(context: Context): ProtoInstant =
     InstantSerializer.toProto(this, context)
