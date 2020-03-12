@@ -20,12 +20,12 @@ data class Source(
     companion object : Entity.Companion<Source>("source")
 
     object ProtoSerializer : Entity.ProtoSerializer<Source, ProtoSource, ProtoSource.Builder>() {
-        override fun fromProto(proto: ProtoSource, context: Context): Source = Source(
+        override fun fromProto(proto: ProtoSource, context: Context) = Source(
             title = proto.title.l10n(context),
             link = proto.link.parseUri().l10n(context)
         )
 
-        override fun toProtoBuilder(entity: Source, context: Context): ProtoSource.Builder =
+        override fun toProtoBuilder(entity: Source, context: Context) =
             ProtoSource.newBuilder().builder(entity) {
                 title = it.title[context]
                 link = it.link[context].toString()

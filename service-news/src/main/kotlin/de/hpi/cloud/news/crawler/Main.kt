@@ -1,9 +1,9 @@
-package crawler
+package de.hpi.cloud.news.crawler
 
-import crawler.utils.days
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.couchbase.upsert
 import de.hpi.cloud.common.couchbase.withBucket
+import de.hpi.cloud.news.crawler.utils.days
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

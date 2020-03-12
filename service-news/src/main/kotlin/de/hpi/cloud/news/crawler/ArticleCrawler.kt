@@ -1,4 +1,4 @@
-package crawler
+package de.hpi.cloud.news.crawler
 
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.news.entities.Article
