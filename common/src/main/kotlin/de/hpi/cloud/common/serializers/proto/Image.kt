@@ -35,5 +35,8 @@ object ImageSerializer : ProtoSerializer<Image, ProtoImage> {
     }
 }
 
+fun ProtoImage.parse(context: Context): Image =
+    ImageSerializer.fromProto(this, context)
+
 fun Image.toProto(context: Context): ProtoImage =
     ImageSerializer.toProto(this, context)

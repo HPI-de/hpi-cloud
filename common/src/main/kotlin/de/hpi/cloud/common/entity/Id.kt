@@ -1,7 +1,6 @@
 package de.hpi.cloud.common.entity
 
 import com.couchbase.client.java.Bucket
-import com.google.common.base.CharMatcher
 import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.grpc.throwAlreadyExists
 import de.hpi.cloud.common.grpc.throwInvalidArgument
@@ -18,10 +17,10 @@ data class Id<E : Entity<E>>(val value: String) {
         val PATTERN = "[a-z0-9\\-_:.]+".toRegex(RegexOption.IGNORE_CASE)
 
         fun <E : Entity<E>> random(): Id<E> =
-            Id(UUID.randomUUID().toString())
+            UUID.randomUUID().toString().asId()
 
         fun <E : Entity<E>> fromParts(vararg parts: String): Id<E> =
-            Id(parts.joinToString(separator = "_"))
+            parts.joinToString(separator = "_").asId()
 
         inline fun <reified E : Entity<E>, reified Proto : GeneratedMessageV3> fromClientSupplied(
             requestedValue: String,
@@ -62,3 +61,5 @@ data class Id<E : Entity<E>>(val value: String) {
     inline fun <reified E : Entity<E>> documentId(): String = "${E::class.entityCompanion().type}:$value"
     internal fun documentId(type: String): String = "$type:$value"
 }
+
+fun <E : Entity<E>> String.asId(): Id<E> = Id(this)

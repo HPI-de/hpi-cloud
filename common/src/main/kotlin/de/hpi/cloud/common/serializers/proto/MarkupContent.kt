@@ -5,8 +5,7 @@ import de.hpi.cloud.common.protobuf.build
 import de.hpi.cloud.common.types.MarkupContent
 import de.hpi.cloud.common.v1test.MarkupContent as ProtoMarkupContent
 
-object MarkupContentSerializer :
-    ProtoSerializer<MarkupContent, ProtoMarkupContent> {
+object MarkupContentSerializer : ProtoSerializer<MarkupContent, ProtoMarkupContent> {
     override fun fromProto(proto: ProtoMarkupContent, context: Context): MarkupContent {
         return MarkupContent(
             type = MarkupContent.Type.fromMime(proto.type),
@@ -20,6 +19,9 @@ object MarkupContentSerializer :
             content = it.content
         }
 }
+
+fun ProtoMarkupContent.parse(context: Context): MarkupContent =
+    MarkupContentSerializer.fromProto(this, context)
 
 fun MarkupContent.toProto(context: Context): ProtoMarkupContent =
     MarkupContentSerializer.toProto(this, context)

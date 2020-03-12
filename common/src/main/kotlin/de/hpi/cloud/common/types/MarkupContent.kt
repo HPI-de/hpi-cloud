@@ -14,7 +14,6 @@ data class MarkupContent(
         fun markdown(content: String): MarkupContent = MarkupContent(Type.MARKDOWN, content)
     }
 
-
     @Serializable(with = Type.Serializer::class)
     enum class Type(val mime: String) {
         PLAIN("text/plain"),

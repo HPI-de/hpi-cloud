@@ -11,7 +11,6 @@ data class Image(
     val alt: L10n<String>,
     val aspectRatio: Float? = null
 ) {
-
     @Serializable(with = Size.Serializer::class)
     enum class Size {
         ORIGINAL;

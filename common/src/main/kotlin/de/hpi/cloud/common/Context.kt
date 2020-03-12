@@ -1,6 +1,7 @@
 package de.hpi.cloud.common
 
 import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.common.entity.asId
 import java.util.*
 
 data class Context(
@@ -9,7 +10,7 @@ data class Context(
 ) {
     companion object {
         fun forInternalService(serviceName: String): Context = Context(
-            author = Id(serviceName),
+            author = serviceName.asId(),
             languageRanges = listOf()
         )
     }
