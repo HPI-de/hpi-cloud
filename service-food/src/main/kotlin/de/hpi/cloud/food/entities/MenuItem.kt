@@ -40,7 +40,7 @@ data class MenuItem(
                 offerTitle = proto.offerTitle.l10n(context),
                 title = proto.title.l10n(context),
                 counterId = proto.counterId.asId(),
-                labelIds = proto.labelIdsList.map { it.asId() },
+                labelIds = proto.labelIdsList.map { it.asId<Label>() },
                 prices = proto.pricesMap.mapValues { (_, money) -> money.parse(context) }
             )
 

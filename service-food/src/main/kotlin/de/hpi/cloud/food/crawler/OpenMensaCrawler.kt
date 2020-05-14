@@ -1,11 +1,8 @@
 package de.hpi.cloud.food.crawler
 
 import com.beust.klaxon.Klaxon
-import de.hpi.cloud.common.Entity
-import de.hpi.cloud.common.utils.couchbase.i18nMap
-import de.hpi.cloud.common.utils.protobuf.euros
-import de.hpi.cloud.common.utils.protobuf.toDbMap
-import de.hpi.cloud.common.utils.protobuf.toTimestamp
+import de.hpi.cloud.food.crawler.openmensa.CanteenData
+import de.hpi.cloud.food.crawler.openmensa.OpenMensaMeal
 import de.hpi.cloud.food.crawler.utils.openStreamWith
 import java.net.URI
 import java.time.LocalDate
@@ -40,7 +37,10 @@ class OpenMensaCrawler(
             klaxon.parseJsonArray(reader)
                 .mapChildrenObjectsOnly {
                     DateStatus(
-                        date = LocalDate.parse(it.string("date")!!, DATE_FORMAT_ISO8601),
+                        date = LocalDate.parse(
+                            it.string("date")!!,
+                            DATE_FORMAT_ISO8601
+                        ),
                         isOpen = !it.boolean("closed")!!
                     )
                 }
@@ -52,7 +52,13 @@ class OpenMensaCrawler(
         .bufferedReader()
         .use { reader ->
             klaxon.parseArray<OpenMensaMeal>(reader)!!
-                .flatMap { MensaMeal.parseMeals(canteenData, date, it) }
+                .flatMap {
+                    ParsedMensaMeal.parseMeals(
+                        canteenData,
+                        date,
+                        it
+                    )
+                }
                 .let { canteenData.mapReduce(it) }
                 .let { canteenData.deduplicate(it) }
         }
@@ -63,53 +69,3 @@ data class DateStatus(
     val isOpen: Boolean
 )
 
-data class MensaMeal(
-    private val canteenData: CanteenData,
-    val openMensaMeal: OpenMensaMeal,
-    val date: LocalDate,
-    val counter: String?,
-    val title: String,
-    val offerName: String,
-    val labelIds: List<String>,
-    val uniqueIdSuffix: Int? = null
-) : Entity("menuItem", 1) {
-    companion object {
-        fun parseMeals(canteenData: CanteenData, date: LocalDate, openMensaMeal: OpenMensaMeal) =
-            MensaMeal(
-                canteenData,
-                openMensaMeal,
-                date,
-                canteenData.findCounter(openMensaMeal),
-                openMensaMeal.name.replace("\n", ""),
-                canteenData.findOfferName(openMensaMeal),
-                canteenData.findLabels(openMensaMeal)
-            ).let { listOf(it) }
-    }
-
-    override val id
-        get() = canteenData.id +
-                "-${date.format(OpenMensaCrawler.DATE_FORMAT_COMPACT)}" +
-                "-${counter ?: openMensaId}" +
-                (uniqueIdSuffix?.let { "_$it" } ?: "")
-    private val openMensaId get() = openMensaMeal.id
-
-    private val prices = openMensaMeal.prices
-        .mapKeys {
-            if (it.key == "others") "default"
-            else it.key
-        }
-        .mapValues {
-            it.value.euros().toDbMap()
-        }
-
-    override fun valueToMap() = mapOf(
-        "restaurantId" to canteenData.id,
-        "openMensaId" to openMensaId,
-        "date" to date.toTimestamp().toDbMap(),
-        "offerName" to offerName,
-        "title" to i18nMap(de = title),
-        "counter" to i18nMap(de = counter),
-        "labelIds" to labelIds,
-        "prices" to prices
-    )
-}
