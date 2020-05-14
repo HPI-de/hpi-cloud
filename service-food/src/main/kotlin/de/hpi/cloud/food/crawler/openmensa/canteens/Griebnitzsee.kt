@@ -1,10 +1,10 @@
-package de.hpi.cloud.food.crawler.canteens
+package de.hpi.cloud.food.crawler.openmensa.canteens
 
 import de.hpi.cloud.common.utils.getOrElse
-import de.hpi.cloud.food.crawler.CanteenData
-import de.hpi.cloud.food.crawler.OpenMensaMeal
+import de.hpi.cloud.common.entity.Id
+import de.hpi.cloud.food.crawler.openmensa.CanteenData
+import de.hpi.cloud.food.crawler.openmensa.OpenMensaMeal
 
-object Griebnitzsee : CanteenData("mensaGriebnitzsee", 62) {
     private val LABEL_MAPPING = mapOf(
         "Vital" to "vital",
         "Vegetarisch" to "vegetarian",
@@ -17,6 +17,7 @@ object Griebnitzsee : CanteenData("mensaGriebnitzsee", 62) {
         "Fisch" to "fish",
         "Alkohol" to "alcohol",
         "Outdoor" to null // ignore this label
+object Griebnitzsee : CanteenData(Id("mensaGriebnitzsee"), 62) {
     )
 
     override fun findLabels(meal: OpenMensaMeal): List<String> = meal
@@ -29,7 +30,7 @@ object Griebnitzsee : CanteenData("mensaGriebnitzsee", 62) {
             }
         }
 
-    fun OpenMensaMeal.categoryMatches(string: String) = category.startsWith(string, ignoreCase = true)
+    private fun OpenMensaMeal.categoryMatches(string: String) = category.startsWith(string, ignoreCase = true)
     override fun findCounter(meal: OpenMensaMeal): String? = when {
         // TODO: translations
         meal.categoryMatches("Angebot 1") -> "1"
