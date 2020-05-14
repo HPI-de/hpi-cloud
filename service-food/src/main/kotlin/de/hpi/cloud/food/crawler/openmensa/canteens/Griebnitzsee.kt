@@ -1,34 +1,24 @@
 package de.hpi.cloud.food.crawler.openmensa.canteens
 
-import de.hpi.cloud.common.utils.getOrElse
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.food.crawler.openmensa.CanteenData
 import de.hpi.cloud.food.crawler.openmensa.OpenMensaMeal
+import de.hpi.cloud.food.fixtures.labelFixture
 
-    private val LABEL_MAPPING = mapOf(
-        "Vital" to "vital",
-        "Vegetarisch" to "vegetarian",
-        "Vegan" to "vegan",
-        "Schweinefleisch" to "pork",
-        "Rindfleisch" to "beef",
-        "Lamm" to "lamb",
-        "Knoblauch" to "garlic",
-        "Gefluegel" to "poultry",
-        "Fisch" to "fish",
-        "Alkohol" to "alcohol",
-        "Outdoor" to null // ignore this label
 object Griebnitzsee : CanteenData(Id("mensaGriebnitzsee"), 62) {
+    private val LABEL_IGNORE_LIST = setOf(
+        "ostern", "ball", "wm"
     )
 
-    override fun findLabels(meal: OpenMensaMeal): List<String> = meal
-        .notes
-        .map { it.trim() }
+    override fun findLabels(meal: OpenMensaMeal): List<String> = meal.notes
+        .map { it.trim().toLowerCase() }
+        .filterNot { it in LABEL_IGNORE_LIST }
         .mapNotNull { note ->
-            LABEL_MAPPING.getOrElse(note) {
-                println("Unknown label \"${note}\"")
-                null
-            }
+            val label = labelFixture.find { label -> label.matches(note) }
+            if (label == null) println("Unknown label \"$note\"")
+            label
         }
+        .map { it.id.value }
 
     private fun OpenMensaMeal.categoryMatches(string: String) = category.startsWith(string, ignoreCase = true)
     override fun findCounter(meal: OpenMensaMeal): String? = when {
