@@ -9,7 +9,7 @@ import de.hpi.cloud.common.grpc.throwAlreadyExists
 
 inline fun <reified E : Entity<E>, reified Proto : GeneratedMessageV3> Bucket.tryInsert(wrapper: Wrapper<E>) {
     try {
-        insert<E, Proto>(wrapper)
+        insert(wrapper)
     } catch (e: DocumentAlreadyExistsException) {
         throwAlreadyExists<Proto>(wrapper.id)
     }

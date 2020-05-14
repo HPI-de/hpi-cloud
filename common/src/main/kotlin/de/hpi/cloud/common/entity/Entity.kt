@@ -3,11 +3,9 @@ package de.hpi.cloud.common.entity
 import com.google.protobuf.GeneratedMessageV3
 import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.protobuf.setId
-import de.hpi.cloud.common.serializers.proto.InstantSerializer
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
-import java.time.Instant
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
 import de.hpi.cloud.common.serializers.proto.ProtoSerializer as AnyProtoSerializer
