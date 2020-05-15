@@ -12,7 +12,6 @@ import de.hpi.cloud.food.entities.Counter
 import de.hpi.cloud.food.entities.Label
 import de.hpi.cloud.food.entities.MenuItem
 import java.io.IOException
-import java.net.URL
 import java.time.LocalDate
 import java.util.Locale.GERMAN
 
@@ -31,11 +30,10 @@ fun main(args: Array<String>) {
 
     println("Starting $NAME")
     withBucket("food") { bucket ->
-        // TODO: clear previous data
         KNOWN_CANTEENS
             .map { OpenMensaCrawler(it) }
             .forEach { crawler ->
-                println("Starting crawler $CRAWLER_INFO - ${crawler.canteenData}")
+                println("\nStarting crawler $CRAWLER_INFO - ${crawler.canteenData}")
                 println("Using User-Agent=\"$USER_AGENT\"")
 
                 try {
@@ -44,21 +42,24 @@ fun main(args: Array<String>) {
                         else crawler.queryDays()
                             .filter { it.isOpen }
                             .map { it.date }
-                    days.forEach { date ->
-                        print("Date $date: ")
+                    if (days.isEmpty())
+                        println("No days available")
+                    else days.forEach { date ->
+                        println("\nQuerying date $date:")
 
                         val meals = crawler.queryMeals(date)
                         meals.forEach { meal ->
-                            val counterId = meal.counter ?: "unbekannt"
-
                             // populate counters
-                            // TODO: remove later
-                            val counter = Counter(
-                                crawler.canteenData.id,
-                                title = counterId.l10n(GERMAN),
-                                iconUrl = URL("")
-                            )
-                            bucket.upsert(counter.createNewWrapper(FOOD_CONTEXT, Id(counterId)))
+                            // TODO: remove when we've gathered all counters in the database
+                            val counterId = meal.counterName?.let { Id<Counter>(it) }
+                            val counter = meal.counterName?.let { name ->
+                                Counter(
+                                    crawler.canteenData.id,
+                                    title = name.l10n(GERMAN)
+                                )
+                            }
+                            if (counter != null)
+                                bucket.upsert(counter.createNewWrapper(FOOD_CONTEXT, counterId!!))
 
                             val menuItem = MenuItem(
                                 openMensaId = meal.openMensaId.toString(),
@@ -66,15 +67,14 @@ fun main(args: Array<String>) {
                                 restaurantId = crawler.canteenData.id,
                                 offerTitle = meal.offerName.l10n(GERMAN),
                                 title = meal.title.l10n(GERMAN),
-                                counterId = Id(meal.counter ?: "null"),
+                                counterId = counter?.let { counterId },
                                 labelIds = meal.labelIds.map { Id<Label>(it) },
                                 prices = meal.prices.mapValues { (_, price) -> Money.eur(price) }
                             )
-                            println(meal)
-                            println(menuItem)
+                            println("- $meal\n$menuItem\n")
                             bucket.upsert(menuItem.createNewWrapper(FOOD_CONTEXT, Id(meal.id)))
                         }
-                        println("${meals.size} meals")
+                        println("${meals.size} meals found for $date")
                     }
                 } catch (ex: IOException) {
                     ex.printStackTrace()

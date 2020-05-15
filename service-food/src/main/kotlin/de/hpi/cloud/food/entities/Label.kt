@@ -6,19 +6,19 @@ import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.entity.asId
 import de.hpi.cloud.common.protobuf.builder
-import de.hpi.cloud.common.serializers.json.UrlSerializer
+import de.hpi.cloud.common.serializers.json.UriSerializer
 import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import java.net.URL
+import java.net.URI
 import java.util.Locale.GERMAN
 import de.hpi.cloud.food.v1test.Label as ProtoLabel
 
 @Serializable
 data class Label(
     val title: L10n<String>,
-    val iconUrl: @Serializable(UrlSerializer::class) URL,
-    val aliases: Set<String> = setOf()
+    val aliases: Set<String> = setOf(),
+    val iconUri: @Serializable(UriSerializer::class) URI? = null
 ) : Entity<Label>() {
     companion object : Entity.Companion<Label>("label")
 
@@ -32,7 +32,7 @@ data class Label(
         override fun toProtoBuilder(entity: Label, context: Context): ProtoLabel.Builder =
             ProtoLabel.newBuilder().builder(entity) {
                 title = it.title[context]
-                icon = it.iconUrl.toString()
+                icon = it.iconUri.toString()
             }
     }
 
@@ -45,4 +45,8 @@ data class Label(
     }
 }
 
-fun Wrapper<Label>.toProto(context: Context): ProtoLabel = Label.ProtoSerializer.toProto(this, context)
+fun ProtoLabel.parse(context: Context): Label =
+    Label.ProtoSerializer.fromProto(this, context)
+
+fun Wrapper<Label>.toProto(context: Context): ProtoLabel =
+    Label.ProtoSerializer.toProto(this, context)

@@ -14,9 +14,8 @@ class OpenMensaCrawler(
     companion object {
         private const val OPENMENSA_API_VERSION = "v2"
 
-        val BASE_URI: URI = URI("https://openmensa.org/api/$OPENMENSA_API_VERSION/")
+        val BASE_URI = URI("https://openmensa.org/api/$OPENMENSA_API_VERSION/")
         val DATE_FORMAT_ISO8601 = DateTimeFormatter.ISO_LOCAL_DATE!!
-        val DATE_FORMAT_COMPACT = DateTimeFormatter.ofPattern("yyyyMMdd")!!
     }
 
     private val klaxon = Klaxon()
@@ -28,7 +27,7 @@ class OpenMensaCrawler(
     private fun streamJsonApi(query: String) = BASE_URI.resolve(query).toURL()
         .openStreamWith(
             "User-agent" to USER_AGENT,
-            "Accept" to "application/json, text/plain"
+            "Accept" to "application/json"
         )
 
     fun queryDays() = streamJsonApi(daysQuery())

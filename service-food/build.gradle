@@ -16,6 +16,7 @@ apply plugin: 'kotlin'
 
 repositories {
     jcenter()
+    mavenCentral()
     maven { url "https://dl.bintray.com/hpi/hpi-cloud-mvn" }
 }
 
@@ -31,7 +32,4 @@ application {
     // mainClassName = "de.hpi.cloud.food.crawler.MainKt"
     
     mainClassName = "de.hpi.cloud.food.FoodServiceKt"
-}
-repositories {
-    mavenCentral()
 }

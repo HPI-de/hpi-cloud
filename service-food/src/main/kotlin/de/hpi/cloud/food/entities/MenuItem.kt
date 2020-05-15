@@ -25,7 +25,7 @@ data class MenuItem(
     val restaurantId: Id<Restaurant>,
     val offerTitle: L10n<String>,
     val title: L10n<String>,
-    val counterId: Id<Counter>,
+    val counterId: Id<Counter>?,
     val labelIds: List<Id<Label>>,
     val prices: Map<String, Money>
 ) : Entity<MenuItem>() {
@@ -50,8 +50,8 @@ data class MenuItem(
                 restaurantId = it.restaurantId.value
                 offerTitle = it.offerTitle[context]
                 title = it.title[context]
-                counterId = it.counterId.value
-                addAllLabelIds(it.labelIds.map { l -> l.value })
+                counterId = it.counterId?.value
+                addAllLabelIds(it.labelIds.map { label -> label.value })
                 putAllPrices(it.prices.mapValues { (_, money) -> money.toProto(context) })
             }
     }
