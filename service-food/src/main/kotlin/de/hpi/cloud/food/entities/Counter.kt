@@ -5,17 +5,17 @@ import de.hpi.cloud.common.entity.Entity
 import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.protobuf.builder
-import de.hpi.cloud.common.serializers.json.UriSerializer
+import de.hpi.cloud.common.serializers.json.UrlSerializer
 import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.Serializable
-import java.net.URI
+import java.net.URL
 import de.hpi.cloud.food.v1test.Counter as ProtoCounter
 
 @Serializable
 data class Counter(
     val restaurantId: Id<Restaurant>,
     val title: L10n<String>,
-    val iconUri: @Serializable(UriSerializer::class) URI? = null
+    val iconUrl: @Serializable(UrlSerializer::class) URL? = null
 ) : Entity<Counter>() {
     companion object : Entity.Companion<Counter>("counter")
 
@@ -27,7 +27,7 @@ data class Counter(
             ProtoCounter.newBuilder().builder(entity) {
                 restaurantId = it.restaurantId.value
                 title = it.title[context]
-                icon = it.iconUri.toString()
+                icon = it.iconUrl.toString()
             }
     }
 }

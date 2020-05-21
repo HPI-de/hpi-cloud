@@ -6,11 +6,11 @@ import de.hpi.cloud.common.entity.Id
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.entity.asId
 import de.hpi.cloud.common.protobuf.builder
-import de.hpi.cloud.common.serializers.json.UriSerializer
+import de.hpi.cloud.common.serializers.json.UrlSerializer
 import de.hpi.cloud.common.types.L10n
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import java.net.URI
+import java.net.URL
 import java.util.Locale.GERMAN
 import de.hpi.cloud.food.v1test.Label as ProtoLabel
 
@@ -18,7 +18,7 @@ import de.hpi.cloud.food.v1test.Label as ProtoLabel
 data class Label(
     val title: L10n<String>,
     val aliases: Set<String> = setOf(),
-    val iconUri: @Serializable(UriSerializer::class) URI? = null
+    val iconUrl: @Serializable(UrlSerializer::class) URL? = null
 ) : Entity<Label>() {
     companion object : Entity.Companion<Label>("label")
 
@@ -32,7 +32,7 @@ data class Label(
         override fun toProtoBuilder(entity: Label, context: Context): ProtoLabel.Builder =
             ProtoLabel.newBuilder().builder(entity) {
                 title = it.title[context]
-                icon = it.iconUri.toString()
+                icon = it.iconUrl.toString()
             }
     }
 

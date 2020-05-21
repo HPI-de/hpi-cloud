@@ -22,7 +22,6 @@ object Griebnitzsee : CanteenData(Id("mensaGriebnitzsee"), 62) {
 
     private fun OpenMensaMeal.categoryMatches(string: String) = category.startsWith(string, ignoreCase = true)
     override fun findCounter(meal: OpenMensaMeal): String? = when {
-        // TODO: translations
         meal.categoryMatches("Angebot 1") -> "1"
         meal.categoryMatches("Angebot 2") -> "2"
         meal.categoryMatches("Angebot 3") -> "3"

@@ -4,14 +4,17 @@ import de.hpi.cloud.common.Context
 import de.hpi.cloud.common.entity.Entity
 import de.hpi.cloud.common.entity.Wrapper
 import de.hpi.cloud.common.protobuf.builder
+import de.hpi.cloud.common.serializers.json.UrlSerializer
 import de.hpi.cloud.common.types.L10n
 import de.hpi.cloud.common.types.l10n
 import kotlinx.serialization.Serializable
+import java.net.URL
 import de.hpi.cloud.food.v1test.Restaurant as ProtoRestaurant
 
 @Serializable
 data class Restaurant(
-    val title: L10n<String>
+    val title: L10n<String>,
+    val iconUrl: @Serializable(UrlSerializer::class) URL? = null
 ) : Entity<Restaurant>() {
     companion object : Entity.Companion<Restaurant>("restaurant")
 
